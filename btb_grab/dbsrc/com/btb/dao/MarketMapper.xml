@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.btb.dao.MarketMapper">
+	<update id="updateByTowIds" parameterType="com.btb.entity.Market">
+		update market where platformid = #{platformid} and moneypair = #{moneypair}
+	</update>
+</mapper>
