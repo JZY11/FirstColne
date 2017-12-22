@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
 import com.btb.entity.Market;
+import com.btb.entity.Markethistory;
 import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.util.BaseHttp;
 import com.btb.util.CacheData;
@@ -70,5 +71,11 @@ public class HttpUtil extends BaseHttp {
 			e.printStackTrace();
 		}
 		return result;
+	}
+
+	@Override
+	public void getKLineData(Markethistory marketHistory) {
+		// TODO Auto-generated method stub
+		
 	}
 }

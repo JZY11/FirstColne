@@ -1,5 +1,7 @@
 package com.btb.util;
 
+import java.util.Map;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -11,4 +13,12 @@ public class SpringUtil {
 	public static <T> T getBean(Class<T> clazz) {
 		return context.getBean(clazz);
 	}
+	
+	public static void testinitSpring() {
+		Map<String, BaseHttp> beanHttpMap = SpringUtil.context.getBeansOfType(BaseHttp.class);
+		for (BaseHttp baseHttp : beanHttpMap.values()) {
+			CacheData.httpBeans.put(baseHttp.getPlatformId(), baseHttp);
+		}
+	}
+	
 }
