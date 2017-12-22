@@ -1,7 +1,10 @@
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.java_websocket.client.WebSocketClient;
 import org.quartz.SchedulerException;
 
 import com.btb.dao.ThirdpartyplatforminfoMpper;
@@ -9,12 +12,14 @@ import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.Thirdpartyplatforminfo;
 import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.tasks.BuyParmeterJob;
+import com.btb.tasks.CheckWebSocketStatusJob;
 import com.btb.tasks.MarketHistoryKlineJob;
 import com.btb.tasks.RateJob;
 import com.btb.tasks.service.JobManager;
 import com.btb.util.BaseHttp;
 import com.btb.util.CacheData;
 import com.btb.util.SpringUtil;
+import com.btb.util.StringUtil;
 
 public class Main {
 	public static void main(String[] args) {
@@ -53,10 +58,36 @@ public class Main {
 		
 		//所有平台的行情数据采集,,由于需要实时性,所以只能使用websoket
 		//获取所有平台的websoket类
-		
-		
+		List<Class<WebSocketClient>> webSocketUtils = StringUtil.getAllWebSocketUtils();
+		for (Class<WebSocketClient> webSocketUtil : webSocketUtils) {
+			try {
+				Method method = webSocketUtil.getMethod("executeWebSocket", null);
+				method.invoke(null, null);
+			} catch (NoSuchMethodException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		
 		//每隔一分钟检查一次所有websoket的链接状态,如果断链,重新链接
+		try {
+			JobManager.addJob(new CheckWebSocketStatusJob());
+		} catch (SchedulerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		//k线图任务添加,所有平台1分钟采集一次k线历史分钟图数据
 		

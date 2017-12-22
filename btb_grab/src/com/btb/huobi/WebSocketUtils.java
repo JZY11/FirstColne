@@ -37,15 +37,18 @@ import com.btb.util.H2Util;
 import com.btb.util.SpringUtil;
 
 public class WebSocketUtils extends WebSocketClient {
+	//{改}
 	private static final String url = "wss://api.huobi.pro/ws";
-
+	
 	private static WebSocketUtils chatclient = null;
 	HttpUtil httpUtil;
 	public WebSocketUtils(URI serverUri, Map<String, String> headers, int connecttimeout) {
 		super(serverUri, new Draft_17(), headers, connecttimeout);
 		httpUtil=new HttpUtil();
+		//添加到webclient集合中
+		CacheData.webSocketClientMap.put(httpUtil.getPlatformId(), chatclient);
 	}
-
+	
 	@Override
 	public void onOpen(ServerHandshake handshakedata) {
 		System.out.println("开流--opened connection");
@@ -54,24 +57,26 @@ public class WebSocketUtils extends WebSocketClient {
 		for (Thirdpartysupportmoney thirdpartysupportmoney : jiaoyiduis) {
 			SubModel subModel = new SubModel();
 			subModel.setId(thirdpartysupportmoney.getMoneypair());
+			//这一句需要进行修改{改}
 			subModel.setSub("market."+thirdpartysupportmoney.getMoneypair()+".detail");
 			chatclient.send(JSON.toJSONString(subModel));
 		}
 		
 	}
-
+	//需要改这里或者另外一个OnMessage重载方法{改}
 	@Override
 	public void onMessage(ByteBuffer socketBuffer) {
 		try {
 			String marketStr = CommonUtils.byteBufferToString(socketBuffer);
 			String marketJsonStr = CommonUtils.uncompress(marketStr);
+			System.out.println(marketJsonStr);
 			if (marketJsonStr.contains("ping")) {
 				// Client 心跳
 				chatclient.send(marketJsonStr.replace("ping", "pong"));
 			} else {
 				Vo1 vo1 = JSON.parseObject(marketJsonStr, Vo1.class);
-				if (vo1.getCh() != null) {//如果是订阅的行情数据
-					Vo2 vo2 = vo1.getTick();
+				Vo2 vo2 = vo1.getTick();
+				if (vo1.getCh() != null && vo2 != null && vo2.getClose() != null) {//如果是订阅的行情数据
 					Market market = new Market();
 					market.setPlatformid(httpUtil.getPlatformId());//平台id
 					market.setMoneypair(vo1.getCh().split("\\.")[1]);//交易对
@@ -90,7 +95,8 @@ public class WebSocketUtils extends WebSocketClient {
 			e.printStackTrace();
 		}
 	}
-
+	
+	//{改}
 	@Override
 	public void onMessage(String message) {
 		System.out.println("接收--received: " + message);
@@ -99,10 +105,10 @@ public class WebSocketUtils extends WebSocketClient {
 	@Override
 	public void onClose(int code, String reason, boolean remote) {
 		System.out.println("关流--Connection closed by " + (remote ? "remote peer" : "us"));
-		chatclient.connect();
+		chatclient.connect();//进行重连一次
 	}
 
-
+	//不需要动
 	public static void executeWebSocket() throws Exception {
 		//WebSocketImpl.DEBUG = true;
 		chatclient = new WebSocketUtils(new URI(url), getWebSocketHeaders(), 1000);
@@ -120,6 +126,7 @@ public class WebSocketUtils extends WebSocketClient {
 	@Override
 	public void onError(Exception ex) {
 		System.out.println("WebSocket 连接异常: " + ex);
+		ex.printStackTrace();
 	}
 	private static void trustAllHosts(WebSocketUtils appClient) {
 		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {

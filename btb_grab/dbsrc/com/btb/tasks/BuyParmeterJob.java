@@ -39,6 +39,7 @@ public class BuyParmeterJob extends BaseJob {
 		QueryVo vo = new QueryVo();
 		vo.setPlatformid(platformId);
 		List<String> moneypairs = new ArrayList<>();
+		
 		for (Thirdpartysupportmoney thirdpartysupportmoney : thirdpartysupportmoneys) {
 			moneypairs.add(thirdpartysupportmoney.getMoneypair());
 			int insertCount = mapper.updateByPrimaryKey(thirdpartysupportmoney);
@@ -48,9 +49,11 @@ public class BuyParmeterJob extends BaseJob {
 		}
 		vo.setMoneypairs(moneypairs);
 		//删除不存在的
-		mapper.deleteParam(vo);
-		//重新加载数据
-		CacheData.moneyPairs.put(platformId, moneypairs);
+		if (moneypairs != null && !moneypairs.isEmpty()) {
+			mapper.deleteParam(vo);
+			//重新加载数据
+			CacheData.moneyPairs.put(platformId, moneypairs);
+		}
 	}
 
 	@Override

@@ -1,16 +1,23 @@
 package com.btb.util;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URL;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.java_websocket.client.WebSocketClient;
 
 public class StringUtil {
 	public static boolean hashText(Object text) {
@@ -66,4 +73,34 @@ public class StringUtil {
 		return usdMoney.divide(CacheData.rateMap.get("USD"), 2, RoundingMode.HALF_UP);
 	}
 	
+	public static List<Class<WebSocketClient>> getAllWebSocketUtils() {
+		List<Class<WebSocketClient>> websocketUtils = new ArrayList<>();
+		Enumeration<URL> resources = null;
+		try {
+			resources = Thread.currentThread().getContextClassLoader().getResources("com/btb");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		while (resources.hasMoreElements()) {
+			URL url = (URL) resources.nextElement();
+			File file = new File(url.getPath());
+			File[] files = file.listFiles();
+			for (File file2 : files) {
+				 File file3 = new File(file2.getPath()+"\\WebSocketUtils.class");
+				 if (file3.exists()) {
+					String path = file3.getPath();
+					Class<WebSocketClient> forName;
+					try {
+						forName = (Class<WebSocketClient>) Class.forName(path.substring(path.indexOf("com\\btb\\"), path.lastIndexOf(".class")).replaceAll("\\\\", "\\."));
+						websocketUtils.add(forName);
+					} catch (ClassNotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				 }
+			}
+		}
+		return websocketUtils;
+	}
 }

@@ -47,8 +47,6 @@ public class H2Util {
 	private static void closeConn(Connection connection) {
 		if (connection != null) {
 			try {
-				System.out.println(connection);
-				System.out.println(dataSource.getActiveCount());
 				connection.close();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -147,7 +145,6 @@ public class H2Util {
 	
 	
 	public static void insertOrUpdate(Market market) {
-		System.out.println(JSON.toJSONString(market));
 		Connection connection = getconn();
 		String sql="update market set open=?,openrmb=?,close=?,closermb=?,low=?,lowrmb=?,high=?,highrmb=?,vol=?,volrmb=? where id=?";
 		try {
@@ -185,7 +182,7 @@ public class H2Util {
 				prepareStatement2.executeUpdate();
 			}
 			closeConn(connection);
-			System.out.println(sql);
+			//System.out.println(sql);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
