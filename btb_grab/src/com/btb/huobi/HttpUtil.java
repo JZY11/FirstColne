@@ -57,18 +57,4 @@ public class HttpUtil extends BaseHttp {
 		}
 	}
 	
-	/**
-	 * 获取火币k线数据
-	 * @return
-	 */
-	public static String historyKline() {
-		String result=null;
-		try {
-			Connection connect = Jsoup.connect("https://api.huobi.pro/market/history/kline");
-			result = connect.get().body().text();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return result;
-	}
 }

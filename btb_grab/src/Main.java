@@ -57,18 +57,13 @@ public class Main {
 			}
 		}
 		
-		//采集比特币流通数量
-		try {
+		//采集比特币流通数量,暂时先关闭,接口采集来源需要优化
+		/*try {
 			JobManager.addJob(new BtbConutJob());
 		} catch (SchedulerException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-		}
-		
-		
-		//k线图任务添加,所有平台1分钟采集一次k线历史分钟图数据
-		
-		
+		}*/
 		
 		
 		//每隔一分钟检查一次所有websoket的链接状态,如果断链,重新链接
