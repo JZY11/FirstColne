@@ -1,4 +1,4 @@
-package com.btb.huobi;
+package com.btb.okex;
 
 import java.io.IOException;
 import java.net.URI;
@@ -21,12 +21,13 @@ import org.java_websocket.drafts.Draft_17;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ServerHandshake;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.btb.entity.Market;
 
 public class WebSocketUtils extends WebSocketClient {
 
-	private static final String url = "wss://api.huobi.pro/ws";
+	private static final String url = "wss://real.okex.com:10441/websocket";
 
 	private static WebSocketUtils chatclient = null;
 
@@ -41,6 +42,7 @@ public class WebSocketUtils extends WebSocketClient {
 
 	@Override
 	public void onMessage(ByteBuffer socketBuffer) {
+		System.out.println(socketBuffer);
 		try {
 			String marketStr = CommonUtils.byteBufferToString(socketBuffer);
 			String market = CommonUtils.uncompress(marketStr);
@@ -103,12 +105,9 @@ public class WebSocketUtils extends WebSocketClient {
 		chatclient = new WebSocketUtils(new URI(url), getWebSocketHeaders(), 1000);
 		trustAllHosts(chatclient);
 		chatclient.connectBlocking();
-		
 		SubModel subModel = new SubModel();
-		subModel.setId("btcusdt");
-		subModel.setSub("market.btcusdt.detail");
-		
-		chatclient.send(JSONObject.toJSONString(subModel));
+		subModel.setChannel("ok_sub_spot_bch_btc_ticker");
+		chatclient.send(JSON.toJSONString(subModel));
 		Thread.sleep(100000);
 	}
 	public static void main(String[] args) throws Exception {
