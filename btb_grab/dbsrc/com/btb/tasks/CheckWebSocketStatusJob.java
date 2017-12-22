@@ -1,6 +1,8 @@
 package com.btb.tasks;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,7 +37,27 @@ public class CheckWebSocketStatusJob extends BaseJob {
 				}
 				//如果不是开启状态,和正在开启状态,尝试链接
 				if (webSocketClient.getReadyState()!=READYSTATE.OPEN && webSocketClient.getReadyState() != READYSTATE.CONNECTING) {
-					webSocketClient.connect();//尝试链接
+					Class<? extends WebSocketClient> webSocketUtil = webSocketClient.getClass();
+					try {
+						Method method = webSocketUtil.getMethod("executeWebSocket");
+						WebSocketClient webSocketClient2 = (WebSocketClient)method.invoke(null, null);
+						CacheData.webSocketClientMap.put(webSocketUtil.getMethod("getPlatFormId").invoke(null, null).toString(), webSocketClient2);
+					} catch (NoSuchMethodException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (SecurityException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IllegalAccessException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IllegalArgumentException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (InvocationTargetException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		}

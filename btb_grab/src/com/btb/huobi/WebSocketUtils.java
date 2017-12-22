@@ -102,7 +102,13 @@ public class WebSocketUtils extends WebSocketClient {
 	@Override
 	public void onClose(int code, String reason, boolean remote) {
 		System.out.println("关流--Connection closed by " + (remote ? "remote peer" : "us"));
-		chatclient.connect();//进行重连一次
+		try {
+			WebSocketClient webSocketClient = executeWebSocket();
+			CacheData.webSocketClientMap.put(platformid, webSocketClient);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	//不需要动
