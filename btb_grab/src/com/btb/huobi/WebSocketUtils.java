@@ -69,7 +69,7 @@ public class WebSocketUtils extends WebSocketClient {
 		try {
 			String marketStr = CommonUtils.byteBufferToString(socketBuffer);
 			String marketJsonStr = CommonUtils.uncompress(marketStr);
-			System.out.println(marketJsonStr);
+			//System.out.println(marketJsonStr);
 			if (marketJsonStr.contains("ping")) {
 				// Client 心跳
 				chatclient.send(marketJsonStr.replace("ping", "pong"));
