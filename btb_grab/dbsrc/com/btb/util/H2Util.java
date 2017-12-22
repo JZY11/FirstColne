@@ -2,6 +2,7 @@ package com.btb.util;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -11,29 +12,56 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.h2.jdbcx.JdbcConnectionPool;
+
+import com.alibaba.druid.pool.DruidDataSource;
+import com.alibaba.fastjson.JSON;
+import com.btb.entity.Market;
+
 
 public class H2Util {
+	private static DruidDataSource dataSource=new DruidDataSource();
+	 
+    static{  
+    	dataSource.setDriverClassName("org.h2.Driver");
+    	dataSource.setUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+    	dataSource.setUsername("root");
+    	dataSource.setPassword("root");
+    	dataSource.setInitialSize(10);//初始化链接数量
+    	dataSource.setMaxActive(1000);//最大并发链接数
+    	dataSource.setDefaultAutoCommit(true);
+    	dataSource.setValidationQuery("SELECT 'x'");
+    }  
+	static{
+		initTable();
+	}
 	private static Connection getconn() {
-		//jdbc:h2:mem:test;DB_CLOSE_DELAY=-1
 		try {
-			Class.forName("org.h2.Driver");
-			Connection connection = DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "root", "root");
-			return connection;
+			return dataSource.getConnection();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
 	}
-	
+	private static void closeConn(Connection connection) {
+		if (connection != null) {
+			try {
+				System.out.println(connection);
+				System.out.println(dataSource.getActiveCount());
+				connection.close();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 	public static boolean exec(String sql) {
 		Connection connection = getconn();
 		try {
 			Statement statement = connection.createStatement();
 			boolean execute = statement.execute(sql);
+			closeConn(connection);
 			return execute;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -46,6 +74,7 @@ public class H2Util {
 		try {
 			Statement statement = connection.createStatement();
 			int execute = statement.executeUpdate(sql);
+			closeConn(connection);
 			return execute;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -115,6 +144,54 @@ public class H2Util {
 				+ "desc CLOB"
 				+ ")");
 	}
+	
+	
+	public static void insertOrUpdate(Market market) {
+		System.out.println(JSON.toJSONString(market));
+		Connection connection = getconn();
+		String sql="update market set open=?,openrmb=?,close=?,closermb=?,low=?,lowrmb=?,high=?,highrmb=?,vol=?,volrmb=? where id=?";
+		try {
+			PreparedStatement prepareStatement = connection.prepareStatement(sql);
+			int parameterIndex = 0;
+			prepareStatement.setBigDecimal(++parameterIndex, market.getOpen());
+			prepareStatement.setBigDecimal(++parameterIndex, market.getOpenrmb());
+			prepareStatement.setBigDecimal(++parameterIndex, market.getClose());
+			prepareStatement.setBigDecimal(++parameterIndex, market.getClosermb());
+			prepareStatement.setBigDecimal(++parameterIndex, market.getLow());
+			prepareStatement.setBigDecimal(++parameterIndex, market.getLowrmb());
+			prepareStatement.setBigDecimal(++parameterIndex, market.getHigh());
+			prepareStatement.setBigDecimal(++parameterIndex, market.getHighrmb());
+			prepareStatement.setBigDecimal(++parameterIndex, market.getVol());
+			prepareStatement.setBigDecimal(++parameterIndex, market.getVolrmb());
+			prepareStatement.setString(++parameterIndex,market.getPlatformid()+"-"+market.getMoneypair());
+			int updateCount = prepareStatement.executeUpdate();
+			if (updateCount != 1) {//如果不存在,需要先添加
+				sql="insert into market values(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+				PreparedStatement prepareStatement2 = connection.prepareStatement(sql);
+				int parameterIndex2 = 0;
+				prepareStatement2.setString(++parameterIndex2,market.getPlatformid()+"-"+market.getMoneypair());
+				prepareStatement2.setString(++parameterIndex2,market.getPlatformid());
+				prepareStatement2.setString(++parameterIndex2,market.getMoneypair());
+				prepareStatement2.setBigDecimal(++parameterIndex2, market.getOpen());
+				prepareStatement2.setBigDecimal(++parameterIndex2, market.getOpenrmb());
+				prepareStatement2.setBigDecimal(++parameterIndex2, market.getClose());
+				prepareStatement2.setBigDecimal(++parameterIndex2, market.getClosermb());
+				prepareStatement2.setBigDecimal(++parameterIndex2, market.getLow());
+				prepareStatement2.setBigDecimal(++parameterIndex2, market.getLowrmb());
+				prepareStatement2.setBigDecimal(++parameterIndex2, market.getHigh());
+				prepareStatement2.setBigDecimal(++parameterIndex2, market.getHighrmb());
+				prepareStatement2.setBigDecimal(++parameterIndex2, market.getVol());
+				prepareStatement2.setBigDecimal(++parameterIndex2, market.getVolrmb());
+				prepareStatement2.executeUpdate();
+			}
+			closeConn(connection);
+			System.out.println(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	
 	public static void main(String[] args) {
 		initTable();

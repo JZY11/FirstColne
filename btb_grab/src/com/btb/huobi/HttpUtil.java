@@ -24,7 +24,7 @@ import com.btb.util.StringUtil;
  * 查询所有支持的币种
  * https://api.huobi.pro/v1/common/currencys
  */
-
+@Service
 public class HttpUtil extends BaseHttp {
 	
 	public static void main(String[] args) throws IOException {
