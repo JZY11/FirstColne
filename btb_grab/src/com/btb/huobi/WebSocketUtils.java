@@ -82,7 +82,9 @@ public class WebSocketUtils extends WebSocketClient {
 	public void onMessage(String message) {
 		System.out.println("接收--received: " + message);
 	}
-
+	public void onFragment(Framedata fragment) {
+		System.out.println("片段--received fragment: " + new String(fragment.getPayloadData().array()));
+	}
 	@Override
 	public void onClose(int code, String reason, boolean remote) {
 		System.out.println("关流--Connection closed by " + (remote ? "remote peer" : "us"));
@@ -123,7 +125,7 @@ public class WebSocketUtils extends WebSocketClient {
 		chatclient = new WebSocketUtils(new URI(url), getWebSocketHeaders(), 1000);
 		trustAllHosts(chatclient);
 		chatclient.connectBlocking();
-		
+		//System.out.println(chatclient.getReadyState());// 获取链接状态,OPEN是链接状态,CONNECTING: 正在链接状态
 		SubModel subModel = new SubModel();
 		subModel.setId("btcusdt");
 		subModel.setSub("market.btcusdt.detail");
