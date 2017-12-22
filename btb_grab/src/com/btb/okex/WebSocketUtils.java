@@ -28,8 +28,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.Market;
 import com.btb.entity.Thirdpartysupportmoney;
-import com.btb.huobi.vo.Vo1;
-import com.btb.huobi.vo.Vo2;
+import com.btb.huobi.vo.MarketVo1;
+import com.btb.huobi.vo.MarketVo2;
 import com.btb.util.BaseHttp;
 import com.btb.util.CacheData;
 import com.btb.util.DBUtil;
@@ -65,8 +65,8 @@ public class WebSocketUtils extends WebSocketClient {
 				// Client 心跳
 				chatclient.send(marketJsonStr.replace("ping", "pong"));
 			} else {
-				Vo1 vo1 = JSON.parseObject(marketJsonStr, Vo1.class);
-				Vo2 vo2 = vo1.getTick();
+				MarketVo1 vo1 = JSON.parseObject(marketJsonStr, MarketVo1.class);
+				MarketVo2 vo2 = vo1.getTick();
 				if (vo1.getCh() != null && vo2 != null && vo2.getClose() != null) {//如果是订阅的行情数据
 					Market market = new Market();
 					market.setPlatformid(platformid);//平台id

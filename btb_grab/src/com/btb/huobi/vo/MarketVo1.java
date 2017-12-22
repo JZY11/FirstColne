@@ -1,9 +1,9 @@
 package com.btb.huobi.vo;
 
-public class Vo1 {
+public class MarketVo1 {
 	String ch;
 	Long ts;
-	Vo2 tick;
+	MarketVo2 tick;
 	
 	
 	public String getCh() {
@@ -18,10 +18,10 @@ public class Vo1 {
 	public void setTs(Long ts) {
 		this.ts = ts;
 	}
-	public Vo2 getTick() {
+	public MarketVo2 getTick() {
 		return tick;
 	}
-	public void setTick(Vo2 tick) {
+	public void setTick(MarketVo2 tick) {
 		this.tick = tick;
 	}
 	

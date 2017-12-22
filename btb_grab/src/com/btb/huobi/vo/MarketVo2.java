@@ -2,7 +2,7 @@ package com.btb.huobi.vo;
 
 import java.math.BigDecimal;
 
-public class Vo2 {
+public class MarketVo2 {
 	BigDecimal amount;
 	BigDecimal open;
 	BigDecimal close;
