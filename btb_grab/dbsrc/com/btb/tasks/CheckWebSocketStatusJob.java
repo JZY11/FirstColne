@@ -20,23 +20,32 @@ public class CheckWebSocketStatusJob extends BaseJob {
 	public void execute(JobExecutionContext job) throws JobExecutionException {
 		// TODO Auto-generated method stub
 		Map<String, WebSocketClient> webSocketClientMap = CacheData.webSocketClientMap;
+		int i=0;
+		int ii=0;
 		for (String key : webSocketClientMap.keySet()) {
 			WebSocketClient webSocketClient = webSocketClientMap.get(key);
 			if (webSocketClient==null) {
 				System.out.println("平台ID:"+key+" - websocketClient没有链接上");
 			}else {
+				if (webSocketClient.getReadyState() == READYSTATE.OPEN) {
+					i++;
+				}
+				if (webSocketClient.getReadyState() == READYSTATE.CONNECTING) {
+					ii++;
+				}
 				//如果不是开启状态,和正在开启状态,尝试链接
 				if (webSocketClient.getReadyState()!=READYSTATE.OPEN && webSocketClient.getReadyState() != READYSTATE.CONNECTING) {
 					webSocketClient.connect();//尝试链接
 				}
 			}
 		}
+		System.out.println("一共:"+webSocketClientMap.size()+"个, 正常链接:"+i+"个,正在链接:"+ii+"个");
 	}
 
 	@Override
 	public Integer getSeconds() {
 		// TODO Auto-generated method stub
-		return 60;//秒为单位,1分钟检查一次
+		return 10;//秒为单位,1分钟检查一次
 	}
 
 	@Override
