@@ -56,13 +56,27 @@ public class Main {
 			}
 		}
 		
+		
+		//k线图任务添加,所有平台1分钟采集一次k线历史分钟图数据
+		
+		
+		
+		
+		//每隔一分钟检查一次所有websoket的链接状态,如果断链,重新链接
+		try {
+			JobManager.addJob(new CheckWebSocketStatusJob());
+		} catch (SchedulerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		//所有平台的行情数据采集,,由于需要实时性,所以只能使用websoket
 		//获取所有平台的websoket类
 		List<Class<WebSocketClient>> webSocketUtils = StringUtil.getAllWebSocketUtils();
 		for (Class<WebSocketClient> webSocketUtil : webSocketUtils) {
 			try {
-				Method method = webSocketUtil.getMethod("executeWebSocket", null);
-				method.invoke(null, null);
+				Method method = webSocketUtil.getMethod("executeWebSocket");
+				WebSocketClient webSocketClient = (WebSocketClient)method.invoke(null, null);
+				CacheData.webSocketClientMap.put(webSocketUtil.getMethod("getPlatFormId").invoke(null, null).toString(), webSocketClient);
 			} catch (NoSuchMethodException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -80,19 +94,6 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
-		
-		//每隔一分钟检查一次所有websoket的链接状态,如果断链,重新链接
-		try {
-			JobManager.addJob(new CheckWebSocketStatusJob());
-		} catch (SchedulerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		//k线图任务添加,所有平台1分钟采集一次k线历史分钟图数据
-		
-		
-		
 	}
 	
 }

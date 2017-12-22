@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.java_websocket.WebSocket.READYSTATE;
 import org.java_websocket.client.WebSocketClient;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -22,9 +23,12 @@ public class CheckWebSocketStatusJob extends BaseJob {
 		for (String key : webSocketClientMap.keySet()) {
 			WebSocketClient webSocketClient = webSocketClientMap.get(key);
 			if (webSocketClient==null) {
-				System.out.println(webSocketClient);
+				System.out.println("平台ID:"+key+" - websocketClient没有链接上");
 			}else {
-				System.out.println(webSocketClient.getReadyState());
+				//如果不是开启状态,和正在开启状态,尝试链接
+				if (webSocketClient.getReadyState()!=READYSTATE.OPEN && webSocketClient.getReadyState() != READYSTATE.CONNECTING) {
+					webSocketClient.connect();//尝试链接
+				}
 			}
 		}
 	}
@@ -32,7 +36,7 @@ public class CheckWebSocketStatusJob extends BaseJob {
 	@Override
 	public Integer getSeconds() {
 		// TODO Auto-generated method stub
-		return 2;//秒为单位
+		return 60;//秒为单位,1分钟检查一次
 	}
 
 	@Override

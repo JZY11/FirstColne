@@ -41,19 +41,16 @@ public class WebSocketUtils extends WebSocketClient {
 	private static final String url = "wss://api.huobi.pro/ws";
 	
 	private static WebSocketUtils chatclient = null;
-	HttpUtil httpUtil;
+	private static String platformid;
 	public WebSocketUtils(URI serverUri, Map<String, String> headers, int connecttimeout) {
 		super(serverUri, new Draft_17(), headers, connecttimeout);
-		httpUtil=new HttpUtil();
-		//添加到webclient集合中
-		CacheData.webSocketClientMap.put(httpUtil.getPlatformId(), chatclient);
+		platformid=new HttpUtil().getPlatformId();
 	}
-	
 	@Override
 	public void onOpen(ServerHandshake handshakedata) {
 		System.out.println("开流--opened connection");
 		//打开后添加订阅
-		List<Thirdpartysupportmoney> jiaoyiduis = DBUtil.getJiaoyidui(httpUtil.getPlatformId());
+		List<Thirdpartysupportmoney> jiaoyiduis = DBUtil.getJiaoyidui(platformid);
 		for (Thirdpartysupportmoney thirdpartysupportmoney : jiaoyiduis) {
 			SubModel subModel = new SubModel();
 			subModel.setId(thirdpartysupportmoney.getMoneypair());
@@ -78,7 +75,7 @@ public class WebSocketUtils extends WebSocketClient {
 				Vo2 vo2 = vo1.getTick();
 				if (vo1.getCh() != null && vo2 != null && vo2.getClose() != null) {//如果是订阅的行情数据
 					Market market = new Market();
-					market.setPlatformid(httpUtil.getPlatformId());//平台id
+					market.setPlatformid(platformid);//平台id
 					market.setMoneypair(vo1.getCh().split("\\.")[1]);//交易对
 					market.setAmount(vo2.getAmount());//24小时成交量
 					market.setClose(vo2.getClose());//最新价格
@@ -109,11 +106,12 @@ public class WebSocketUtils extends WebSocketClient {
 	}
 
 	//不需要动
-	public static void executeWebSocket() throws Exception {
+	public static WebSocketClient executeWebSocket() throws Exception {
 		//WebSocketImpl.DEBUG = true;
 		chatclient = new WebSocketUtils(new URI(url), getWebSocketHeaders(), 1000);
 		trustAllHosts(chatclient);//添加ssh安全信任
 		chatclient.connect();//异步链接
+		return chatclient;
 		//System.out.println(chatclient.getReadyState());// 获取链接状态,OPEN是链接状态,CONNECTING: 正在链接状态
 	}
 	public static void main(String[] args) throws Exception {
@@ -152,5 +150,8 @@ public class WebSocketUtils extends WebSocketClient {
 	public static Map<String, String> getWebSocketHeaders() throws IOException {
 		Map<String, String> headers = new HashMap<String, String>();
 		return headers;
+	}
+	public static String getPlatFormId() {
+		return platformid;	
 	}
 }
