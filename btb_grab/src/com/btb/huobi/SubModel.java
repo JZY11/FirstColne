@@ -2,7 +2,7 @@ package com.btb.huobi;
 
 public class SubModel {
 	private String sub;
-	private Long id;
+	private String id;
 
 	public String getSub() {
 		return sub;
@@ -12,11 +12,13 @@ public class SubModel {
 		this.sub = sub;
 	}
 
-	public Long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
+
+	
 }

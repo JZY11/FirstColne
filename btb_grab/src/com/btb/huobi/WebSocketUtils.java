@@ -12,6 +12,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import org.java_websocket.WebSocket.READYSTATE;
 import org.java_websocket.WebSocketImpl;
 import org.java_websocket.client.DefaultSSLWebSocketClientFactory;
 import org.java_websocket.client.WebSocketClient;
@@ -116,14 +117,12 @@ public class WebSocketUtils extends WebSocketClient {
 		trustAllHosts(chatclient);
 		chatclient.connectBlocking();
 		
-		// 请求数据
-		ReqModel reqModel1 = new ReqModel();
-		reqModel1.setReq("market.btcusdt.detail");
-		reqModel1.setId(10003L);
-		chatclient.send(JSONObject.toJSONString(reqModel1));
+		SubModel subModel = new SubModel();
+		subModel.setId("id10");
+		subModel.setSub("market.btcusdt.detail");
+		
+		chatclient.send(JSONObject.toJSONString(subModel));
 		Thread.sleep(100000);
-		chatclient.send(JSONObject.toJSONString(reqModel1));
-		System.out.println("send : " + JSONObject.toJSONString(reqModel1));
 	}
 	public static void main(String[] args) throws Exception {
 		executeWebSocket();

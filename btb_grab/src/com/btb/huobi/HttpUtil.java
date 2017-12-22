@@ -86,14 +86,9 @@ public class HttpUtil extends BaseHttp {
 			Market market = new Market();
 			market.setPlatformid(getPlatformId());
 			market.setMoneypair(moneypair);
-			market.setLiang24h(amount);//24小时成交量
-			market.setMoney24h(vol);//24小时成交额
-			//24小时成交额,人民币
-			market.setMoney24hrmb(StringUtil.UsdToRmb(vol));
-			market.setNewmoney(close);//最新价格
-			//最新价格人民币
-			market.setNewmoneyrmb(StringUtil.UsdToRmb(close));//最新价格人民币
-			market.setTop24h(StringUtil.getbaifenbi(open, close));
+			
+			
+			
 			return market;
 		} catch (Exception e) {
 			e.printStackTrace();
