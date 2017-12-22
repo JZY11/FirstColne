@@ -2,6 +2,8 @@ package com.btb.entity;
 
 import java.math.BigDecimal;
 
+import javax.persistence.Column;
+
 public class Bitbinfo {
 	String bitbcode;//比特币缩写
 	String bitbname;//英文名称
@@ -9,6 +11,7 @@ public class Bitbinfo {
 	BigDecimal currentcount;//当前量
 	BigDecimal allcount;//总量
 	String iconurl;//图片地址
+	@Column(name="description")
 	String desc;//描述
 	
 	

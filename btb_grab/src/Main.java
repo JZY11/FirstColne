@@ -11,6 +11,7 @@ import com.btb.dao.ThirdpartyplatforminfoMpper;
 import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.Thirdpartyplatforminfo;
 import com.btb.entity.Thirdpartysupportmoney;
+import com.btb.tasks.BtbConutJob;
 import com.btb.tasks.BuyParmeterJob;
 import com.btb.tasks.CheckWebSocketStatusJob;
 import com.btb.tasks.MarketHistoryKlineJob;
@@ -54,6 +55,14 @@ public class Main {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+		
+		//采集比特币流通数量
+		try {
+			JobManager.addJob(new BtbConutJob());
+		} catch (SchedulerException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 		
 		

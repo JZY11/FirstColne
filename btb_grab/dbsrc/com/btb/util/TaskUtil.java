@@ -21,13 +21,17 @@ import com.btb.entity.Rate;
 
 public class TaskUtil {
 	public static void main(String[] args) throws Exception {
-		System.out.println(DateUtil.dateFormat(new Date(1513767600000L), "yyyy-MM-dd HH:mm:ss"));
+		//System.out.println(DateUtil.dateFormat(new Date(1513767600000L), "yyyy-MM-dd HH:mm:ss"));
+		long currentTimeMillis = System.currentTimeMillis();
+		TaskUtil.initBtcCount();
+		long currentTimeMillis2 = System.currentTimeMillis();
+		System.out.println((currentTimeMillis2-currentTimeMillis)/1000);
 	}
 	
 	/*
-	 * 获取每一种币的流通数量,1分钟一次
+	 * 获取每一种币的流通数量,5分钟一次
 	 */
-	public static boolean isrunningInitBtcCount = false;
+	private static boolean isrunningInitBtcCount = false;
 	public static void initBtcCount() {
 		BitbinfoMapper bitbinfoMapper = SpringUtil.getBean(BitbinfoMapper.class);
 		bitbinfoMapper.deleteByExample(null);
