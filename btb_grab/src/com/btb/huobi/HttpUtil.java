@@ -27,14 +27,6 @@ import com.btb.util.StringUtil;
 @Service
 public class HttpUtil extends BaseHttp {
 	
-	public static void main(String[] args) throws IOException {
-		/*List<Thirdpartysupportmoney> thirdpartysupportmoneys=new ArrayList<>();
-		new HttpUtil().geThirdpartysupportmoneys(thirdpartysupportmoneys);
-		System.out.println(JSON.toJSONString(thirdpartysupportmoneys));*/
-		Market market = new HttpUtil().detailMerged("omgusdt");
-		System.out.println(JSON.toJSONString(market));
-	}
-	
 	public String getPlatformId() {
 		return "100000000";
 	}
@@ -65,36 +57,6 @@ public class HttpUtil extends BaseHttp {
 		}
 	}
 	
-	/**
-	 * 获取实时行情数据
-	 * 参数交易对,自动传参调用
-	 * @return
-	 */
-	public Market detailMerged(String moneypair) {
-		String result=null;
-		try {
-			Connection connect = Jsoup.connect("https://api.huobi.pro/market/detail?symbol="+moneypair);
-			result = connect.get().body().text();
-			Map map = JSON.parseObject(result, Map.class);
-			Map map2 = (Map) map.get("tick");
-			
-			BigDecimal close=(BigDecimal) map2.get("close");//最新价格
-			BigDecimal open=(BigDecimal) map2.get("open");//24小时前开盘价格
-			BigDecimal vol=(BigDecimal) map2.get("vol");//24小时成交额
-			BigDecimal amount=(BigDecimal) map2.get("amount");//24小时成交量
-			
-			Market market = new Market();
-			market.setPlatformid(getPlatformId());
-			market.setMoneypair(moneypair);
-			
-			
-			
-			return market;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
 	/**
 	 * 获取火币k线数据
 	 * @return

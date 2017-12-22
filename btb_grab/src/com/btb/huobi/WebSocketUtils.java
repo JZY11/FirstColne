@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.net.ssl.SSLContext;
@@ -24,12 +25,16 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.Market;
+import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.huobi.vo.Vo1;
 import com.btb.huobi.vo.Vo2;
 import com.btb.util.BaseHttp;
 import com.btb.util.CacheData;
+import com.btb.util.DBUtil;
 import com.btb.util.H2Util;
+import com.btb.util.SpringUtil;
 
 public class WebSocketUtils extends WebSocketClient {
 	private static final String url = "wss://api.huobi.pro/ws";
@@ -44,6 +49,15 @@ public class WebSocketUtils extends WebSocketClient {
 	@Override
 	public void onOpen(ServerHandshake handshakedata) {
 		System.out.println("开流--opened connection");
+		//打开后添加订阅
+		List<Thirdpartysupportmoney> jiaoyiduis = DBUtil.getJiaoyidui(httpUtil.getPlatformId());
+		for (Thirdpartysupportmoney thirdpartysupportmoney : jiaoyiduis) {
+			SubModel subModel = new SubModel();
+			subModel.setId(thirdpartysupportmoney.getMoneypair());
+			subModel.setSub("market."+thirdpartysupportmoney.getMoneypair()+".detail");
+			chatclient.send(JSON.toJSONString(subModel));
+		}
+		
 	}
 
 	@Override
@@ -52,7 +66,6 @@ public class WebSocketUtils extends WebSocketClient {
 			String marketStr = CommonUtils.byteBufferToString(socketBuffer);
 			String marketJsonStr = CommonUtils.uncompress(marketStr);
 			if (marketJsonStr.contains("ping")) {
-				System.out.println(marketJsonStr.replace("ping", "pong"));
 				// Client 心跳
 				chatclient.send(marketJsonStr.replace("ping", "pong"));
 			} else {
@@ -82,19 +95,32 @@ public class WebSocketUtils extends WebSocketClient {
 	public void onMessage(String message) {
 		System.out.println("接收--received: " + message);
 	}
+	
+	@Override
+	public void onClose(int code, String reason, boolean remote) {
+		System.out.println("关流--Connection closed by " + (remote ? "remote peer" : "us"));
+		chatclient.connect();
+	}
+
+
+	public static void executeWebSocket() throws Exception {
+		//WebSocketImpl.DEBUG = true;
+		chatclient = new WebSocketUtils(new URI(url), getWebSocketHeaders(), 1000);
+		trustAllHosts(chatclient);//添加ssh安全信任
+		chatclient.connect();//异步链接
+		//System.out.println(chatclient.getReadyState());// 获取链接状态,OPEN是链接状态,CONNECTING: 正在链接状态
+	}
+	public static void main(String[] args) throws Exception {
+		executeWebSocket();
+	}
+	
 	public void onFragment(Framedata fragment) {
 		System.out.println("片段--received fragment: " + new String(fragment.getPayloadData().array()));
 	}
 	@Override
-	public void onClose(int code, String reason, boolean remote) {
-		System.out.println("关流--Connection closed by " + (remote ? "remote peer" : "us"));
-	}
-
-	@Override
 	public void onError(Exception ex) {
 		System.out.println("WebSocket 连接异常: " + ex);
 	}
-
 	private static void trustAllHosts(WebSocketUtils appClient) {
 		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
 			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
@@ -119,21 +145,5 @@ public class WebSocketUtils extends WebSocketClient {
 	public static Map<String, String> getWebSocketHeaders() throws IOException {
 		Map<String, String> headers = new HashMap<String, String>();
 		return headers;
-	}
-	public static void executeWebSocket() throws Exception {
-		//WebSocketImpl.DEBUG = true;
-		chatclient = new WebSocketUtils(new URI(url), getWebSocketHeaders(), 1000);
-		trustAllHosts(chatclient);
-		chatclient.connectBlocking();
-		//System.out.println(chatclient.getReadyState());// 获取链接状态,OPEN是链接状态,CONNECTING: 正在链接状态
-		SubModel subModel = new SubModel();
-		subModel.setId("btcusdt");
-		subModel.setSub("market.btcusdt.detail");
-		
-		chatclient.send(JSONObject.toJSONString(subModel));
-		Thread.sleep(100000);
-	}
-	public static void main(String[] args) throws Exception {
-		executeWebSocket();
 	}
 }

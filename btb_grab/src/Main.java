@@ -9,7 +9,7 @@ import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.Thirdpartyplatforminfo;
 import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.tasks.BuyParmeterJob;
-import com.btb.tasks.MarketJob;
+import com.btb.tasks.MarketHistoryKlineJob;
 import com.btb.tasks.RateJob;
 import com.btb.tasks.service.JobManager;
 import com.btb.util.BaseHttp;
@@ -18,22 +18,26 @@ import com.btb.util.SpringUtil;
 
 public class Main {
 	public static void main(String[] args) {
-		//初始化所有的HttpUtil
+		//初始化所有的HttpUtil,启动执行一次
 		Map<String, BaseHttp> beanHttpMap = SpringUtil.context.getBeansOfType(BaseHttp.class);
 		for (BaseHttp baseHttp : beanHttpMap.values()) {
 			CacheData.httpBeans.put(baseHttp.getPlatformId(), baseHttp);
 		}
 		
-		//银行利率
+		//银行利率每天执行一次,1个任务
 		try {
 			JobManager.addJob(new RateJob());
 		} catch (SchedulerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//采集每个平台支持的交易对
+		
+		
+		//采集每个平台支持的交易对, 多少平台多少任务,大概200多个任务
+		//获取所有平台
 		ThirdpartyplatforminfoMpper thirdpartyplatforminfoMpper = SpringUtil.getBean(ThirdpartyplatforminfoMpper.class);
 		List<Thirdpartyplatforminfo> thirdpartyplatfos = thirdpartyplatforminfoMpper.selectAll();
+		//循环添加所有平台的交易对采集,利用的是HttpUtil的getPlatformId()方法和geThirdpartysupportmoneys方法
 		for (Thirdpartyplatforminfo thirdpartyplatforminfo : thirdpartyplatfos) {
 			Map<String, Object> map = new HashMap<>();
 			map.put("platformId", thirdpartyplatforminfo.getId());
@@ -47,33 +51,17 @@ public class Main {
 			}
 		}
 		
-		//每隔1秒钟请求一次
-		ThirdpartysupportmoneyMapper thirdpartysupportmoneyMapper = SpringUtil.getBean(ThirdpartysupportmoneyMapper.class);
-		List<Thirdpartysupportmoney> selectAll = thirdpartysupportmoneyMapper.selectAll();
-		for (Thirdpartysupportmoney thirdpartysupportmoney : selectAll) {
-			String jobGroupId = "market-"+thirdpartysupportmoney.getPlatformid();
-			String jobId = thirdpartysupportmoney.getMoneypair();
-			MarketJob marketJob = new MarketJob();
-			marketJob.setGroupId(jobGroupId);
-			marketJob.setJobId(jobId);
-			Map<String, Object> param=new HashMap<>();
-			param.put("platformId", thirdpartysupportmoney.getPlatformid());
-			param.put("moneypair", thirdpartysupportmoney.getMoneypair());
-			marketJob.setParam(param);
-			try {
-				JobManager.addJob(marketJob);
-			} catch (SchedulerException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		//所有平台的行情数据采集,,由于需要实时性,所以只能使用websoket
+		//获取所有平台的websoket类
 		
-	}
-	/*
-	 * 行情任务
-	 */
-	public static void addMarketJob(MarketJob marketJob) {
-		String jobId = marketJob.jobId;
+		
+		
+		//每隔一分钟检查一次所有websoket的链接状态,如果断链,重新链接
+		
+		//k线图任务添加,所有平台1分钟采集一次k线历史分钟图数据
+		
+		
+		
 	}
 	
 }

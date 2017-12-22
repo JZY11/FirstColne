@@ -9,6 +9,5 @@ import com.btb.entity.Thirdpartysupportmoney;
 public abstract class BaseHttp {
 	public abstract String getPlatformId();
 	public abstract void geThirdpartysupportmoneys(List<Thirdpartysupportmoney> thirdpartysupportmoneys);
-	public abstract Market detailMerged(String moneypair) throws IOException;
 
 }
