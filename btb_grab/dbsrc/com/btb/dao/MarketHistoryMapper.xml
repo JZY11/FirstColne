@@ -6,4 +6,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<select id="getMaxTimeId" parameterType="com.btb.entity.Markethistory" resultType="long"> 
 		SELECT MAX(timeId) from Markethistory where platformid = #{platformid} and moneypair = #{moneypair}
 	</select>
+	
+	<!-- 
+	second: 传入秒, 比如1分:60秒, 1小时:3600秒
+	1分,3分,5分,10分,15分,30分,1小时,2小时,4小时,6小时,12小时,1天,3天,1周,1月 -->
+	<select id="">
+		select 
+		ceil(timeid/${second})*${second} as id
+		,count(timeid)
+		from markethistory GROUP BY id order by timeid desc
+	</select>
+	
 </mapper>
