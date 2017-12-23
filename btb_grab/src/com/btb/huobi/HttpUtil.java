@@ -67,12 +67,12 @@ public class HttpUtil extends BaseHttp {
 	
 	public void getKLineData(Markethistory marketHistory) {
 		MarketHistoryMapper marketHistoryMapper = SpringUtil.getBean(MarketHistoryMapper.class);
-		long currentTime = System.currentTimeMillis();
+		long currentTime = System.currentTimeMillis()/1000;//换算成秒级
 		Long dbCurrentTime=marketHistoryMapper.getMaxTimeId(marketHistory);
 		if (dbCurrentTime == null) {//如果第一次获取数据,直接过去一天数据
-			dbCurrentTime=new Date(currentTime-24*60*60*1000).getTime();
+			dbCurrentTime=currentTime-24*60*60;
 		}
-		long size = (currentTime-dbCurrentTime)/(60*1000);
+		long size = (currentTime-dbCurrentTime)/60;
 		if (size > 1440) {//大于一天就取一天的数据
 			size=1440;
 		}
@@ -85,12 +85,12 @@ public class HttpUtil extends BaseHttp {
 				//数据整改开始
 				MarketHistoryVo1 marketHistoryVo1 = JSON.parseObject(text, MarketHistoryVo1.class);
 				List<MarketHistoryVo2> data = marketHistoryVo1.getData();
-				for (MarketHistoryVo2 marketHistoryVo2 : data) {
-					//1513950540000 1513864192031
-					if (marketHistoryVo2.getId()*1000<=dbCurrentTime) {
-						break;//如果小于数据库最大时间,跳出循环
+				for (int i=data.size()-1;i>=0;i--) {//倒序从最小时间开始添加数据库,方便k线图计算
+					MarketHistoryVo2 marketHistoryVo2 = data.get(i);
+					if (marketHistoryVo2.getId()<=dbCurrentTime) {
+						continue;//如果小于数据库最大时间,说明数据库已经存在,不需要再添加
 					}else {
-						marketHistory.setTimeid(marketHistoryVo2.getId()*1000);
+						marketHistory.setTimeid(marketHistoryVo2.getId());
 						marketHistory.setAmount(marketHistoryVo2.getAmount());
 						marketHistory.setClose(marketHistoryVo2.getClose());
 						marketHistory.setCount(marketHistoryVo2.getCount());
