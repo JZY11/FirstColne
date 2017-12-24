@@ -69,7 +69,7 @@ public class Main {
 			e1.printStackTrace();
 		}*/
 		
-		//每隔一分钟检查一次所有websoket的链接状态,如果断链,重新链接
+		//每隔30秒检查一次所有websoket的链接状态,如果断链,重新链接
 		try {
 			JobManager.addJob(new CheckWebSocketStatusJob());
 		} catch (SchedulerException e) {

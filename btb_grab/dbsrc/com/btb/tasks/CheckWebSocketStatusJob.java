@@ -67,7 +67,7 @@ public class CheckWebSocketStatusJob extends BaseJob {
 	@Override
 	public Integer getSeconds() {
 		// TODO Auto-generated method stub
-		return 10;//秒为单位,1分钟检查一次
+		return 30;//秒为单位30秒检查一次
 	}
 
 	@Override
