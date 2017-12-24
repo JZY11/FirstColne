@@ -57,7 +57,7 @@ public class WebSocketUtils extends WebSocketClient {
 			String chId = "market."+thirdpartysupportmoney.getMoneypair()+".detail";
 			subModel.setId(chId);
 			subModel.setSub(chId);
-			//chatclient.send(JSON.toJSONString(subModel));
+			chatclient.send(JSON.toJSONString(subModel));
 			
 			//添加买卖盘行情订阅
 			chId="market."+thirdpartysupportmoney.getMoneypair()+".depth.step1";

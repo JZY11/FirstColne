@@ -26,11 +26,11 @@ import com.btb.util.StringUtil;
  * 查询所有支持的币种
  * https://api.huobi.pro/v1/common/currencys
  */
-@Service("ikexHttpUtil")
+@Service("okexHttpUtil")
 public class HttpUtil extends BaseHttp {
 	
 	public String getPlatformId() {
-		return "100000001";
+		return "okex";
 	}
 	
 	/**
