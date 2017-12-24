@@ -32,7 +32,7 @@ import com.btb.util.StringUtil;
  * 查询所有支持的币种
  * https://api.huobi.pro/v1/common/currencys
  */
-@Service
+@Service("huobi_httputil")
 public class HttpUtil extends BaseHttp {
 	
 	public String getPlatformId() {
