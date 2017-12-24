@@ -77,7 +77,9 @@ public class HttpUtil extends BaseHttp {
 			size=1440;
 		}
 		if (size != 0) {
-			Connection connect = Jsoup.connect("https://api.huobi.pro/market/history/kline?period=1min&size="+size+"&symbol="+marketHistory.getMoneypair());
+			String url="https://api.huobi.pro/market/history/kline?period=1min&size="+size+"&symbol="+marketHistory.getMoneypair();
+			Connection connect = Jsoup.connect(url);
+			//System.out.println(url);
 			connect.ignoreContentType(true);
 			try {
 				String text = connect.get().body().text();
@@ -85,7 +87,9 @@ public class HttpUtil extends BaseHttp {
 				//数据整改开始
 				MarketHistoryVo1 marketHistoryVo1 = JSON.parseObject(text, MarketHistoryVo1.class);
 				List<MarketHistoryVo2> data = marketHistoryVo1.getData();
-				for (int i=data.size()-1;i>=0;i--) {//倒序从最小时间开始添加数据库,方便k线图计算
+				//这里是大于0,因为第一个值是实时变化的,当前分钟还没有统计完整,
+				//倒序从最小时间开始添加数据库,方便k线图计算
+				for (int i=data.size()-1;i>0;i--) {
 					MarketHistoryVo2 marketHistoryVo2 = data.get(i);
 					if (marketHistoryVo2.getId()<=dbCurrentTime) {
 						continue;//如果小于数据库最大时间,说明数据库已经存在,不需要再添加
