@@ -25,16 +25,8 @@ public class MarketHistoryKlineJob extends BaseJob {
 	public void execute(JobExecutionContext job) throws JobExecutionException {
 		Map<String, List<String>> moneyPairsMap = CacheData.moneyPairs;
 		for (String platformid : moneyPairsMap.keySet()) {
-			List<String> moneyPairs = moneyPairsMap.get(platformid);
-			for (String moneyPair : moneyPairs) {
-				Markethistory markethistory = new Markethistory();
-				markethistory.setPlatformid(platformid);
-				markethistory.setMoneypair(moneyPair);
-				MarketHistoryKlineTread marketHistoryKlineTread = new MarketHistoryKlineTread(markethistory);
-				//不可以异步运行,火币网有限制
-				//ThreadPoolManager.workNoResult(marketHistoryKlineTread);
-				marketHistoryKlineTread.run();
-			}
+			MarketHistoryKlineTread marketHistoryKlineTread = new MarketHistoryKlineTread(platformid);
+			ThreadPoolManager.workNoResult(marketHistoryKlineTread);
 		}
 		
 	}
@@ -42,7 +34,7 @@ public class MarketHistoryKlineJob extends BaseJob {
 	@Override
 	public Integer getSeconds() {
 		// TODO Auto-generated method stub
-		return 60;//秒为单位
+		return 90;//秒为单位
 	}
 
 	@Override

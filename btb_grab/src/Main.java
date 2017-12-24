@@ -51,7 +51,7 @@ public class Main {
 			e.printStackTrace();
 		}
 		
-		//采集k线图分钟数据,每分钟执行一次,大概200多*20交易对,4000千多任务
+		//采集k线图分钟数据,每1.5分钟执行一次, 每个平台一个线程,大概200个线程
 		//获取平台所有交易对
 		try {
 			MarketHistoryKlineJob marketHistoryKlineJob = new MarketHistoryKlineJob();
@@ -69,7 +69,38 @@ public class Main {
 			e1.printStackTrace();
 		}*/
 		
-		
+		//每隔一分钟检查一次所有websoket的链接状态,如果断链,重新链接
+		try {
+			JobManager.addJob(new CheckWebSocketStatusJob());
+		} catch (SchedulerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//所有平台的行情数据采集,,由于需要实时性,所以只能使用websoket
+		//获取所有平台的websoket类
+		List<Class<WebSocketClient>> webSocketUtils = StringUtil.getAllWebSocketUtils();
+		for (Class<WebSocketClient> webSocketUtil : webSocketUtils) {
+			try {
+				Method method = webSocketUtil.getMethod("executeWebSocket");
+				WebSocketClient webSocketClient = (WebSocketClient)method.invoke(null, null);
+				CacheData.webSocketClientMap.put(webSocketUtil.getMethod("getPlatFormId").invoke(null, null).toString(), webSocketClient);
+			} catch (NoSuchMethodException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 	
 }

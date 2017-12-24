@@ -52,7 +52,7 @@ public class BuyParmeterJob extends BaseJob {
 	@Override
 	public Integer getSeconds() {
 		// TODO Auto-generated method stub
-		return 60;//秒为单位,每小时采集一次 每个平台支持的交易对
+		return 3600;//秒为单位,每小时采集一次 每个平台支持的交易对
 	}
 
 	@Override
