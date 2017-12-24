@@ -28,6 +28,11 @@ public class TaskUtil {
 		System.out.println((currentTimeMillis2-currentTimeMillis)/1000);
 	}
 	
+	public static void initMoneypair() {
+		
+	}
+	
+	
 	/*
 	 * 获取每一种币的流通数量,5分钟一次
 	 */

@@ -11,55 +11,48 @@ import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.SchedulerException;
 
+import com.btb.dao.ThirdpartyplatforminfoMpper;
 import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.QueryVo;
+import com.btb.entity.Thirdpartyplatforminfo;
 import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.tasks.service.BaseJob;
+import com.btb.tasks.service.JobManager;
+import com.btb.tasks.threads.BuyParmeterThread;
 import com.btb.util.BaseHttp;
 import com.btb.util.CacheData;
 import com.btb.util.SpringUtil;
 import com.btb.util.TaskUtil;
+import com.btb.util.thread.ThreadPoolManager;
 
+/**
+ * 每小时采集一次所有平台的交易对
+ * @author Administrator
+ *
+ */
 public class BuyParmeterJob extends BaseJob {
 	
 	
 	@Override
 	public void execute(JobExecutionContext job) throws JobExecutionException {
 		// TODO Auto-generated method stub
-		JobDetail jobDetail = job.getJobDetail();
-		JobDataMap dataMap = jobDetail.getJobDataMap();
-		String platformId = dataMap.get("platformId").toString();//平台id
-		System.out.println("job-"+platformId+"  采集交易对");
-		BaseHttp baseHttp = CacheData.httpBeans.get(platformId);
-		List<Thirdpartysupportmoney> thirdpartysupportmoneys = new ArrayList<>();
-		baseHttp.geThirdpartysupportmoneys(thirdpartysupportmoneys );
-		ThirdpartysupportmoneyMapper mapper = SpringUtil.getBean(ThirdpartysupportmoneyMapper.class);
-		
-		QueryVo vo = new QueryVo();
-		vo.setPlatformid(platformId);
-		List<String> moneypairs = new ArrayList<>();
-		
-		for (Thirdpartysupportmoney thirdpartysupportmoney : thirdpartysupportmoneys) {
-			moneypairs.add(thirdpartysupportmoney.getMoneypair());
-			int insertCount = mapper.updateByPrimaryKey(thirdpartysupportmoney);
-			if (insertCount != 1) {
-				mapper.insert(thirdpartysupportmoney);
-			}
-		}
-		vo.setMoneypairs(moneypairs);
-		//删除不存在的
-		if (moneypairs != null && !moneypairs.isEmpty()) {
-			mapper.deleteParam(vo);
-			//重新加载数据
-			CacheData.moneyPairs.put(platformId, moneypairs);
+		System.out.println("job-  采集交易对");
+		//获取所有平台
+		ThirdpartyplatforminfoMpper thirdpartyplatforminfoMpper = SpringUtil.getBean(ThirdpartyplatforminfoMpper.class);
+		List<Thirdpartyplatforminfo> thirdpartyplatfos = thirdpartyplatforminfoMpper.selectAll();
+		//循环多编程,采集每个平台的交易对
+		for (Thirdpartyplatforminfo thirdpartyplatforminfo : thirdpartyplatfos) {
+			BuyParmeterThread buyParmeterThread = new BuyParmeterThread(thirdpartyplatforminfo.getId());
+			ThreadPoolManager.workNoResult(buyParmeterThread);
 		}
 	}
 
 	@Override
 	public Integer getSeconds() {
 		// TODO Auto-generated method stub
-		return 60*60;//秒为单位,每小时采集一次 每个平台支持的交易对
+		return 60;//秒为单位,每小时采集一次 每个平台支持的交易对
 	}
 
 	@Override
@@ -75,6 +68,19 @@ public class BuyParmeterJob extends BaseJob {
 	public Class<? extends Job> getC() {
 		// TODO Auto-generated method stub
 		return this.getClass();
+	}
+
+	
+	public static void main(String[] args) {
+		//--采集每个平台支持的交易对, 多少平台多少任务,大概200多个任务
+		try {
+			SpringUtil.testinitSpring();
+			BuyParmeterJob buyParmeterJob = new BuyParmeterJob();
+			JobManager.addJob(buyParmeterJob);
+		} catch (SchedulerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 }

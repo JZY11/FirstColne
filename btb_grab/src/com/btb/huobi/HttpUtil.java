@@ -43,7 +43,9 @@ public class HttpUtil extends BaseHttp {
 	 * @return
 	 */
 	public void geThirdpartysupportmoneys(List<Thirdpartysupportmoney> thirdpartysupportmoneys) {
-		Connection connect = Jsoup.connect("https://api.huobi.pro/v1/common/symbols");
+		String url="https://api.huobi.pro/v1/common/symbols";
+		System.out.println(url);
+		Connection connect = Jsoup.connect(url);
 		connect.ignoreContentType(true);
 		String result = null;
 		try {
@@ -64,27 +66,19 @@ public class HttpUtil extends BaseHttp {
 		}
 	}
 	
-	
-	public void getKLineData(Markethistory marketHistory) {
-		MarketHistoryMapper marketHistoryMapper = SpringUtil.getBean(MarketHistoryMapper.class);
-		long currentTime = System.currentTimeMillis()/1000;//换算成秒级
-		Long dbCurrentTime=marketHistoryMapper.getMaxTimeId(marketHistory);
-		if (dbCurrentTime == null) {//如果第一次获取数据,直接过去一天数据
-			dbCurrentTime=currentTime-24*60*60;
-		}
-		long size = (currentTime-dbCurrentTime)/60;
-		if (size > 1440) {//大于一天就取一天的数据
-			size=1440;
-		}
-		if (size != 0) {
+	/**
+	 * marketHistory:有两个数据, 平台id,和交易对
+	 * marketHistoryMapper: 保存数据的dao层对象
+	 * size: 要查询的size, 通过当前数据最大时间,和当前时间差计算而来
+	 * dbCurrentTime: 数据库当前最大时间,long类型
+	 */
+	public void getKLineData(Markethistory marketHistory,MarketHistoryMapper marketHistoryMapper,Long size,Long dbCurrentTime) {
 			String url="https://api.huobi.pro/market/history/kline?period=1min&size="+size+"&symbol="+marketHistory.getMoneypair();
 			Connection connect = Jsoup.connect(url);
-			//System.out.println(url);
+			System.out.println(url);
 			connect.ignoreContentType(true);
 			try {
 				String text = connect.get().body().text();
-				
-				//数据整改开始
 				MarketHistoryVo1 marketHistoryVo1 = JSON.parseObject(text, MarketHistoryVo1.class);
 				List<MarketHistoryVo2> data = marketHistoryVo1.getData();
 				//这里是大于0,因为第一个值是实时变化的,当前分钟还没有统计完整,
@@ -94,7 +88,7 @@ public class HttpUtil extends BaseHttp {
 					if (marketHistoryVo2.getId()<=dbCurrentTime) {
 						continue;//如果小于数据库最大时间,说明数据库已经存在,不需要再添加
 					}else {
-						marketHistory.setTimeid(marketHistoryVo2.getId());
+						marketHistory.setTimeid(marketHistoryVo2.getId());//这里需要注意,long类型时间必须为10位的,msql数据库才支持
 						marketHistory.setAmount(marketHistoryVo2.getAmount());
 						marketHistory.setClose(marketHistoryVo2.getClose());
 						marketHistory.setCount(marketHistoryVo2.getCount());
@@ -102,15 +96,14 @@ public class HttpUtil extends BaseHttp {
 						marketHistory.setLow(marketHistoryVo2.getLow());
 						marketHistory.setOpen(marketHistoryVo2.getOpen());
 						marketHistory.setVol(marketHistoryVo2.getVol());
-						marketHistoryMapper.insert(marketHistory);
-						//数据整改结束
+						marketHistoryMapper.insert(marketHistory);//保存到数据库
 					}
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
+		
 	}
 	public static void main(String[] args) {
 		SpringUtil.testinitSpring();
@@ -121,7 +114,7 @@ public class HttpUtil extends BaseHttp {
 		Markethistory marketHistory=new Markethistory();
 		marketHistory.setPlatformid(httpUtil.getPlatformId());
 		marketHistory.setMoneypair("btcusdt");
-		httpUtil.getKLineData(marketHistory);
+		//httpUtil.getKLineData(marketHistory);
 	}
 	
 }

@@ -3,6 +3,7 @@ package com.btb.util;
 import java.io.IOException;
 import java.util.List;
 
+import com.btb.dao.MarketHistoryMapper;
 import com.btb.entity.Market;
 import com.btb.entity.Markethistory;
 import com.btb.entity.Thirdpartysupportmoney;
@@ -10,5 +11,5 @@ import com.btb.entity.Thirdpartysupportmoney;
 public abstract class BaseHttp {
 	public abstract String getPlatformId();
 	public abstract void geThirdpartysupportmoneys(List<Thirdpartysupportmoney> thirdpartysupportmoneys);
-	public abstract void getKLineData(Markethistory marketHistory);
+	public abstract void getKLineData(Markethistory marketHistory,MarketHistoryMapper marketHistoryMapper,Long size,Long dbCurrentTime);
 }

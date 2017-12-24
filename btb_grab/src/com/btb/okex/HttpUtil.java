@@ -11,6 +11,7 @@ import org.jsoup.Jsoup;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
+import com.btb.dao.MarketHistoryMapper;
 import com.btb.entity.Market;
 import com.btb.entity.Markethistory;
 import com.btb.entity.Thirdpartysupportmoney;
@@ -74,8 +75,11 @@ public class HttpUtil extends BaseHttp {
 	}
 
 	@Override
-	public void getKLineData(Markethistory marketHistory) {
+	public void getKLineData(Markethistory marketHistory, MarketHistoryMapper marketHistoryMapper, Long size,
+			Long dbCurrentTime) {
 		// TODO Auto-generated method stub
 		
 	}
+
+	
 }
