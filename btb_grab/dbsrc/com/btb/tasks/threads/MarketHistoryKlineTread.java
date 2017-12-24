@@ -16,7 +16,6 @@ public class MarketHistoryKlineTread extends Thread {
 	
 	@Override
 	public void run() {
-		System.out.println("正在采集k线图平台:"+marketHistory.getPlatformid()+" 交易对:"+marketHistory.getMoneypair());
 		MarketHistoryMapper marketHistoryMapper = SpringUtil.getBean(MarketHistoryMapper.class);
 		long currentTime = System.currentTimeMillis()/1000;//换算成秒级
 		Long dbCurrentTime=marketHistoryMapper.getMaxTimeId(marketHistory);
@@ -31,7 +30,6 @@ public class MarketHistoryKlineTread extends Thread {
 			BaseHttp baseHttp = CacheData.httpBeans.get(marketHistory.getPlatformid());
 			baseHttp.getKLineData(marketHistory, marketHistoryMapper, size, dbCurrentTime);
 		}
-		System.out.println("采集完毕k线图平台:"+marketHistory.getPlatformid()+" 交易对:"+marketHistory.getMoneypair());
 	}
 	
 }

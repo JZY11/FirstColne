@@ -23,7 +23,6 @@ public class BuyParmeterThread extends Thread {
 	
 	@Override
 	public void run() {
-		System.out.println("正在采集--"+platformId+" 平台的交易对");
 		//根据平台id获取httpUtil对象
 		BaseHttp baseHttp = CacheData.httpBeans.get(platformId);
 		List<Thirdpartysupportmoney> thirdpartysupportmoneys = new ArrayList<>();
@@ -49,6 +48,5 @@ public class BuyParmeterThread extends Thread {
 			//重新加载数据
 			CacheData.moneyPairs.put(platformId, moneypairs);
 		}
-		System.out.println("采集完毕--"+platformId+" 平台的交易对");
 	}
 }

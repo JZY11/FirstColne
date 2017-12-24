@@ -21,6 +21,7 @@ import com.btb.huobi.vo.MarketHistoryVo1;
 import com.btb.huobi.vo.MarketHistoryVo2;
 import com.btb.util.BaseHttp;
 import com.btb.util.CacheData;
+import com.btb.util.JsoupUtil;
 import com.btb.util.SpringUtil;
 import com.btb.util.StringUtil;
 /*
@@ -44,12 +45,8 @@ public class HttpUtil extends BaseHttp {
 	 */
 	public void geThirdpartysupportmoneys(List<Thirdpartysupportmoney> thirdpartysupportmoneys) {
 		String url="https://api.huobi.pro/v1/common/symbols";
-		System.out.println(url);
-		Connection connect = Jsoup.connect(url);
-		connect.ignoreContentType(true);
-		String result = null;
-		try {
-			result = connect.get().body().text();
+		String result = JsoupUtil.getJson(url);
+		if (result != null) {
 			Map map = JSON.parseObject(result, Map.class);
 			List<Map<String, String>> list = (List<Map<String, String>>)map.get("data");
 			for (Map<String, String> map2 : list) {
@@ -60,9 +57,6 @@ public class HttpUtil extends BaseHttp {
 				thirdpartysupportmoney.setMoneypair(thirdpartysupportmoney.getMoneytype()+thirdpartysupportmoney.getBuymoneytype());
 				thirdpartysupportmoneys.add(thirdpartysupportmoney);
 			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 	
@@ -74,17 +68,16 @@ public class HttpUtil extends BaseHttp {
 	 */
 	public void getKLineData(Markethistory marketHistory,MarketHistoryMapper marketHistoryMapper,Long size,Long dbCurrentTime) {
 			String url="https://api.huobi.pro/market/history/kline?period=1min&size="+size+"&symbol="+marketHistory.getMoneypair();
-			Connection connect = Jsoup.connect(url);
-			System.out.println(url);
-			connect.ignoreContentType(true);
-			try {
-				String text = connect.get().body().text();
+			String text = JsoupUtil.getJson(url);
+			if (text != null) {
 				MarketHistoryVo1 marketHistoryVo1 = JSON.parseObject(text, MarketHistoryVo1.class);
 				List<MarketHistoryVo2> data = marketHistoryVo1.getData();
-				//这里是大于0,因为第一个值是实时变化的,当前分钟还没有统计完整,
-				//倒序从最小时间开始添加数据库,方便k线图计算
-				for (int i=data.size()-1;i>0;i--) {
-					MarketHistoryVo2 marketHistoryVo2 = data.get(i);
+				////去除最新值,因为最新值,当前分钟还没有统计完整,
+				if (!data.isEmpty()) {
+					data.remove(0);
+				}
+				
+				for (MarketHistoryVo2 marketHistoryVo2:data) {
 					if (marketHistoryVo2.getId()<=dbCurrentTime) {
 						continue;//如果小于数据库最大时间,说明数据库已经存在,不需要再添加
 					}else {
@@ -99,11 +92,7 @@ public class HttpUtil extends BaseHttp {
 						marketHistoryMapper.insert(marketHistory);//保存到数据库
 					}
 				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
-		
 	}
 	public static void main(String[] args) {
 		SpringUtil.testinitSpring();

@@ -31,7 +31,9 @@ public class MarketHistoryKlineJob extends BaseJob {
 				markethistory.setPlatformid(platformid);
 				markethistory.setMoneypair(moneyPair);
 				MarketHistoryKlineTread marketHistoryKlineTread = new MarketHistoryKlineTread(markethistory);
-				ThreadPoolManager.workNoResult(marketHistoryKlineTread);
+				//不可以异步运行,火币网有限制
+				//ThreadPoolManager.workNoResult(marketHistoryKlineTread);
+				marketHistoryKlineTread.run();
 			}
 		}
 		

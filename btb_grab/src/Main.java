@@ -21,6 +21,7 @@ import com.btb.util.BaseHttp;
 import com.btb.util.CacheData;
 import com.btb.util.SpringUtil;
 import com.btb.util.StringUtil;
+import com.btb.util.TaskUtil;
 
 public class Main {
 	public static void main(String[] args) {
@@ -31,7 +32,7 @@ public class Main {
 		}
 		
 		//从数据库获取所有交易对,只有启动的时候使用
-		
+		TaskUtil.initMoneypair();
 		
 		//银行利率每天执行一次,1个任务
 		try {

@@ -2,6 +2,7 @@ package com.btb.util;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import org.xml.sax.SAXException;
 import com.alibaba.fastjson.JSON;
 import com.btb.dao.BitbinfoMapper;
 import com.btb.dao.RateMapper;
+import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.Bitbinfo;
 import com.btb.entity.Rate;
 
@@ -28,8 +30,22 @@ public class TaskUtil {
 		System.out.println((currentTimeMillis2-currentTimeMillis)/1000);
 	}
 	
+	/**
+	 * 初始化CacheData.moneyPairs,所有平台的交易对
+	 */
 	public static void initMoneypair() {
-		
+		ThirdpartysupportmoneyMapper thirdpartysupportmoneyMapper = SpringUtil.getBean(ThirdpartysupportmoneyMapper.class);
+		List<Map<String, String>> findplatformidAll = thirdpartysupportmoneyMapper.findplatformidAll();
+		for (Map<String, String> map : findplatformidAll) {
+			String platformid = map.get("platformid");
+			List<Map<String, String>> findmoneypairByplatformid = thirdpartysupportmoneyMapper.findmoneypairByplatformid(platformid);
+			List<String> moneypairs = new ArrayList<>();
+			for (Map<String, String> map2 : findmoneypairByplatformid) {
+				String moneypair = map2.get("moneypair");
+				moneypairs.add(moneypair);
+			}
+			CacheData.moneyPairs.put(platformid, moneypairs);
+		}
 	}
 	
 	

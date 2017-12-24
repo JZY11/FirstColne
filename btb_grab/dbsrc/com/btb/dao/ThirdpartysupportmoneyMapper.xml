@@ -9,4 +9,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			#{moneypair}
 		</foreach>
 	</delete>
+	
+	<select id="findplatformidAll" resultType="map">
+		select distinct platformid from thirdpartysupportmoney
+	</select>
+	
+	<select id="findmoneypairByplatformid" parameterType="string" resultType="map">
+		select moneypair from thirdpartysupportmoney where platformid = #{platformid}
+	</select>
+	
 </mapper>
