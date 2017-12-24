@@ -28,6 +28,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.Market;
 import com.btb.entity.Thirdpartysupportmoney;
+import com.btb.huobi.vo.MarketDepthVo1;
 import com.btb.huobi.vo.MarketVo1;
 import com.btb.huobi.vo.MarketVo2;
 import com.btb.util.BaseHttp;
@@ -49,15 +50,22 @@ public class WebSocketUtils extends WebSocketClient {
 	@Override
 	public void onOpen(ServerHandshake handshakedata) {
 		System.out.println("开流--opened connection");
-		//打开后添加订阅
 		List<Thirdpartysupportmoney> jiaoyiduis = DBUtil.getJiaoyidui(platformid);
 		for (Thirdpartysupportmoney thirdpartysupportmoney : jiaoyiduis) {
 			SubModel subModel = new SubModel();
-			subModel.setId(thirdpartysupportmoney.getMoneypair());
-			//这一句需要进行修改{改}
-			subModel.setSub("market."+thirdpartysupportmoney.getMoneypair()+".detail");
+			//打开后添加实时行情订阅
+			String chId = "market."+thirdpartysupportmoney.getMoneypair()+".detail";
+			subModel.setId(chId);
+			subModel.setSub(chId);
+			//chatclient.send(JSON.toJSONString(subModel));
+			
+			//添加买卖盘行情订阅
+			chId="market."+thirdpartysupportmoney.getMoneypair()+".depth.step1";
+			subModel.setId(chId);
+			subModel.setSub(chId);
 			chatclient.send(JSON.toJSONString(subModel));
 		}
+		
 		
 	}
 	//需要改这里或者另外一个OnMessage重载方法{改}
@@ -71,21 +79,26 @@ public class WebSocketUtils extends WebSocketClient {
 				// Client 心跳
 				chatclient.send(marketJsonStr.replace("ping", "pong"));
 			} else {
-				MarketVo1 vo1 = JSON.parseObject(marketJsonStr, MarketVo1.class);
-				MarketVo2 vo2 = vo1.getTick();
-				if (vo1.getCh() != null && vo2 != null && vo2.getClose() != null) {//如果是订阅的行情数据
-					Market market = new Market();
-					market.setPlatformid(platformid);//平台id
-					market.setMoneypair(vo1.getCh().split("\\.")[1]);//交易对
-					market.setAmount(vo2.getAmount());//24小时成交量
-					market.setClose(vo2.getClose());//最新价格
-					market.setCount(vo2.getCount());//24小时成交笔数
-					market.setHigh(vo2.getHigh());//24小时最高价
-					market.setLow(vo2.getLow());//24小时最低价
-					market.setOpen(vo2.getOpen());//24小时前开盘价格
-					market.setVol(vo2.getVol());//24小时成交额
-					//添加或者更新行情数据
-					H2Util.insertOrUpdate(market);
+				if (marketJsonStr.contains("depth.step1")) {//是买盘买盘数据
+					MarketDepthVo1 marketDepthVo1 = JSON.parseObject(marketJsonStr, MarketDepthVo1.class);
+					System.out.println(JSON.toJSONString(marketDepthVo1));
+				}else {//实时行情数据
+					MarketVo1 vo1 = JSON.parseObject(marketJsonStr, MarketVo1.class);
+					MarketVo2 vo2 = vo1.getTick();
+					if (vo1.getCh() != null && vo2 != null && vo2.getClose() != null) {//如果是订阅的行情数据
+						Market market = new Market();
+						market.setPlatformid(platformid);//平台id
+						market.setMoneypair(vo1.getCh().split("\\.")[1]);//交易对
+						market.setAmount(vo2.getAmount());//24小时成交量
+						market.setClose(vo2.getClose());//最新价格
+						market.setCount(vo2.getCount());//24小时成交笔数
+						market.setHigh(vo2.getHigh());//24小时最高价
+						market.setLow(vo2.getLow());//24小时最低价
+						market.setOpen(vo2.getOpen());//24小时前开盘价格
+						market.setVol(vo2.getVol());//24小时成交额
+						//添加或者更新行情数据
+						H2Util.insertOrUpdate(market);
+					}
 				}
 			}
 		} catch (IOException e) {
