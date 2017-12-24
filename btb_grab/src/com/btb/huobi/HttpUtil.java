@@ -36,7 +36,8 @@ import com.btb.util.StringUtil;
 public class HttpUtil extends BaseHttp {
 	
 	public String getPlatformId() {
-		return "100000000";
+		//必须跟数据库的平台id一致
+		return "huobipro";
 	}
 	
 	/**
