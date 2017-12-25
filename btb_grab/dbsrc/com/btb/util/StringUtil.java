@@ -70,6 +70,9 @@ public class StringUtil {
 	 * @return
 	 */
 	public static BigDecimal UsdToRmb(BigDecimal usdMoney) {
+		if (usdMoney==null) {
+			return null;
+		}
 		return usdMoney.divide(CacheData.rateMap.get("USD"), 2, RoundingMode.HALF_UP);
 	}
 	

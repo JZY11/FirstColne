@@ -10,6 +10,7 @@ import java.util.Map;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
@@ -33,8 +34,8 @@ import com.btb.util.StringUtil;
  * https://api.huobi.pro/v1/common/currencys
  */
 //@1
-@Service("okex_httputil")
-public class HttpUtil extends BaseHttp {
+@Service("HttpUtil_okex")
+public class HttpUtil_okex extends BaseHttp {
 	
 	public String getPlatformId() {
 		//@2 必须跟数据库的平台id一致
@@ -47,19 +48,25 @@ public class HttpUtil extends BaseHttp {
 	 */
 	//@3
 	public void geThirdpartysupportmoneys(List<Thirdpartysupportmoney> thirdpartysupportmoneys) {
-		String url="https://api.huobi.pro/v1/common/symbols";
-		String result = JsoupUtil.getJson(url);
-		if (result != null) {
-			Map map = JSON.parseObject(result, Map.class);
-			List<Map<String, String>> list = (List<Map<String, String>>)map.get("data");
-			for (Map<String, String> map2 : list) {
+		try {
+			//采集币币交易对
+			Document document = Jsoup.connect("https://www.okex.com/ws_api.html").header("Accept-Language", "zh-cn").get();
+			Element element = document.getElementsContainingOwnText("订阅行情数据").get(0).nextElementSibling();
+			String text = element.select("div.page-header").text();
+			text=text.substring(text.indexOf("：")+1);
+			String[] split = text.split(" ");
+			for (String string : split) {
+				String[] split2 = string.split("_");
 				Thirdpartysupportmoney thirdpartysupportmoney = new Thirdpartysupportmoney();
 				thirdpartysupportmoney.setPlatformid(getPlatformId());
-				thirdpartysupportmoney.setMoneytype(map2.get("base-currency"));
-				thirdpartysupportmoney.setBuymoneytype(map2.get("quote-currency"));
-				thirdpartysupportmoney.setMoneypair(thirdpartysupportmoney.getMoneytype()+thirdpartysupportmoney.getBuymoneytype());
+				thirdpartysupportmoney.setMoneytype(split2[0]);
+				thirdpartysupportmoney.setBuymoneytype(split2[1]);
+				thirdpartysupportmoney.setMoneypair(string);
 				thirdpartysupportmoneys.add(thirdpartysupportmoney);
 			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	
@@ -71,29 +78,36 @@ public class HttpUtil extends BaseHttp {
 	 */
 	//@4
 	public void getKLineData(Markethistory marketHistory,MarketHistoryMapper marketHistoryMapper,Long size,Long dbCurrentTime) {
-			String url="https://api.huobi.pro/market/history/kline?period=1min&size="+size+"&symbol="+marketHistory.getMoneypair();
+			String url="https://www.okex.com/api/v1/kline.do?type=1min&size="+size+"&symbol="+marketHistory.getMoneypair();
 			String text = JsoupUtil.getJson(url);
+			System.out.println(text);
 			if (text != null) {
-				MarketHistoryVo1 marketHistoryVo1 = JSON.parseObject(text, MarketHistoryVo1.class);
-				List<MarketHistoryVo2> data = marketHistoryVo1.getData();
+				List<BigDecimal[]> data = JSON.parseArray(text, BigDecimal[].class);
 				////去除最新值,因为最新值,当前分钟还没有统计完整,
 				if (!data.isEmpty()) {
-					data.remove(0);
+					data.remove(data.size()-1);//ok的最新值是最后一个
 				}
 				
-				for (MarketHistoryVo2 marketHistoryVo2:data) {
-					if (marketHistoryVo2.getId()<=dbCurrentTime) {
+				for (BigDecimal[] marketHistoryList:data) {
+					Long ts = marketHistoryList[0].longValue();//交易时间
+					BigDecimal open = marketHistoryList[1];//开盘
+					BigDecimal high = marketHistoryList[2];//1分钟最高
+					BigDecimal low = marketHistoryList[3];//1分钟最低
+					BigDecimal close = marketHistoryList[4];//收盘
+					BigDecimal amount =marketHistoryList[5];//1分钟交易量
+					
+					if (ts/1000 <=dbCurrentTime) {//数据库时间是秒级别
 						continue;//如果小于数据库最大时间,说明数据库已经存在,不需要再添加
 					}else {
-						marketHistory.setTimeid(marketHistoryVo2.getId());//这里需要注意,long类型时间必须为10位的,msql数据库才支持
-						marketHistory.setAmount(marketHistoryVo2.getAmount());
-						marketHistory.setClose(marketHistoryVo2.getClose());
-						marketHistory.setCount(marketHistoryVo2.getCount());
-						marketHistory.setHigh(marketHistoryVo2.getHigh());
-						marketHistory.setLow(marketHistoryVo2.getLow());
-						marketHistory.setOpen(marketHistoryVo2.getOpen());
-						marketHistory.setVol(marketHistoryVo2.getVol());
-						marketHistoryMapper.insert(marketHistory);//保存到数据库
+						marketHistory.setTimeid(ts);//这里需要注意,long类型时间必须为10位的,msql数据库才支持
+						marketHistory.setAmount(amount);
+						marketHistory.setClose(close);
+						//marketHistory.setCount(0);
+						marketHistory.setHigh(high);
+						marketHistory.setLow(low);
+						marketHistory.setOpen(open);
+						//marketHistory.setVol(marketHistoryVo2.getVol());
+						marketHistoryMapper.insertSelective(marketHistory);//保存到数据库
 					}
 				}
 			}
@@ -102,12 +116,16 @@ public class HttpUtil extends BaseHttp {
 		SpringUtil.testinitSpring();
 		//CacheData.httpBeans.get("100000000");
 		
-		HttpUtil httpUtil = new HttpUtil();
+		HttpUtil_okex httpUtil = new HttpUtil_okex();
 		
 		Markethistory marketHistory=new Markethistory();
 		marketHistory.setPlatformid(httpUtil.getPlatformId());
-		marketHistory.setMoneypair("btcusdt");
-		//httpUtil.getKLineData(marketHistory);
+		marketHistory.setMoneypair("btc_usdt");
+		httpUtil.getKLineData(marketHistory,SpringUtil.getBean(MarketHistoryMapper.class),200L,1514176860L);
+		 
+		
+		List<Thirdpartysupportmoney> thirdpartysupportmoneys = new ArrayList<>();
+		//new HttpUtil_okex().geThirdpartysupportmoneys(thirdpartysupportmoneys);
 	}
 	
 }

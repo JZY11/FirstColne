@@ -15,7 +15,7 @@ import com.btb.util.StringUtil;
 
 public class Test {
 	public static void main(String[] args) {
-		System.out.println(DateUtil.dateFormat(new Date(1514009700000L), "yyyy-MM-dd HH:mm:ss"));
+		System.out.println(DateUtil.dateFormat(new Date(1514185260000L), "yyyy-MM-dd HH:mm:ss"));
 	}
 	public static void main1(String[] args) throws IOException, ClassNotFoundException {
 		

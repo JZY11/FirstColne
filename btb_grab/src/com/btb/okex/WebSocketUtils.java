@@ -45,7 +45,7 @@ public class WebSocketUtils extends WebSocketClient {
 	private static String platformid;
 	public WebSocketUtils(URI serverUri, Map<String, String> headers, int connecttimeout) {
 		super(serverUri, new Draft_17(), headers, connecttimeout);
-		platformid=new HttpUtil().getPlatformId();
+		platformid=new HttpUtil_okex().getPlatformId();
 	}
 	@Override
 	public void onOpen(ServerHandshake handshakedata) {

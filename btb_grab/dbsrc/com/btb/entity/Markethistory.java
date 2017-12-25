@@ -13,8 +13,8 @@ public class Markethistory {
 	String moneypair;//交易对比如btcuatf
 	@Id
 	Long timeid;//timelongid
-	BigDecimal open;//24小时前价格
-	BigDecimal openrmb;//24小时前价格人民币, 自动生成
+	BigDecimal open;//1分钟时前价格
+	BigDecimal openrmb;//1分钟前价格人民币, 自动生成
 	BigDecimal close;//最新成交价
 	BigDecimal closermb;//最新成交价人民币, 自动生成
 	BigDecimal low;//1分钟内最低价
