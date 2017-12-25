@@ -93,7 +93,7 @@ public class HttpUtil_okex extends BaseHttp {
 					if (ts/1000 <=dbCurrentTime) {//数据库时间是秒级别
 						continue;//如果小于数据库最大时间,说明数据库已经存在,不需要再添加
 					}else {
-						marketHistory.setTimeid(ts);//这里需要注意,long类型时间必须为10位的,msql数据库才支持
+						marketHistory.setTimeid(ts/1000);//这里需要注意,long类型时间必须为10位的,msql数据库才支持
 						marketHistory.setAmount(amount);
 						marketHistory.setClose(close);
 						//marketHistory.setCount(0);

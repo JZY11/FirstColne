@@ -123,7 +123,7 @@ public class WebSocketUtils_contract extends WebSocketClient {
 				market.setHigh(marketContractVo2.getHigh());
 				market.setLow(marketContractVo2.getLow());
 				market.setMoneypair(marketContractVo1.getChannel().replace(startStr, "").replace(endStr, "")+"_usd");
-				market.setOpen(marketContractVo2.get);
+				
 			}
 		}else if (message.contains("_depth_")) {//深度
 			if (message.contains("_depth_this_week_10")) {//本周深度
