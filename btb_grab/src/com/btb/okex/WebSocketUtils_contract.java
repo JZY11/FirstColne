@@ -31,6 +31,9 @@ import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.huobi.vo.MarketDepthVo1;
 import com.btb.huobi.vo.MarketVo1;
 import com.btb.huobi.vo.MarketVo2;
+import com.btb.okex.vo.MarketContractVo1;
+import com.btb.okex.vo.MarketContractVo2;
+import com.btb.okex.vo.MarketDepthVo2;
 import com.btb.util.BaseHttp;
 import com.btb.util.CacheData;
 import com.btb.util.DBUtil;
@@ -41,26 +44,46 @@ public class WebSocketUtils_contract extends WebSocketClient {
 	private static final String url = "wss://real.okex.com:10440/websocket/okexapi";
 	
 	private static WebSocketUtils_contract chatclient = null;
-	private static String platformid;
+	private static String platformid_this_week="okex_this_week";
+	private static String platformid_next_week="okex_next_week";
+	private static String platformid_okex_quarter="okex_quarter";
 	public WebSocketUtils_contract(URI serverUri, Map<String, String> headers, int connecttimeout) {
 		super(serverUri, new Draft_17(), headers, connecttimeout);
-		platformid=new HttpUtil_okex().getPlatformId();
 	}
 	@Override
 	public void onOpen(ServerHandshake handshakedata) {
 		System.out.println("开流--opened connection");
-		List<Thirdpartysupportmoney> jiaoyiduis = DBUtil.getJiaoyidui(platformid);
+		//当周,下周,本季度 的交易对都是一样,通过本周平台id获取即可
+		List<Thirdpartysupportmoney> jiaoyiduis = DBUtil.getJiaoyidui(platformid_this_week);
 		for (Thirdpartysupportmoney thirdpartysupportmoney : jiaoyiduis) {
+			String moneyType = thirdpartysupportmoney.getMoneypair().split("_")[0];
 			SubModel subModel = new SubModel();
-			//打开后添加实时行情订阅
-			String chId = "market."+thirdpartysupportmoney.getMoneypair()+".detail";
+			//本周合约行情订阅
+			String chId = "ok_sub_futureusd_"+moneyType+"_ticker_this_week";
 			subModel.setChannel(chId);
 			chatclient.send(JSON.toJSONString(subModel));
+			//本周合约深度订阅
+			chId="ok_sub_futureusd_"+moneyType+"_depth_this_week_10";
+			subModel.setChannel(chId);
+			//chatclient.send(JSON.toJSONString(subModel));
 			
-			//添加买卖盘行情订阅
-			chId="market."+thirdpartysupportmoney.getMoneypair()+".depth.step1";
+			//下周合约行情订阅
+			chId = "ok_sub_futureusd_"+moneyType+"_ticker_next_week";
 			subModel.setChannel(chId);
-			chatclient.send(JSON.toJSONString(subModel));
+			//chatclient.send(JSON.toJSONString(subModel));
+			//下周合约深度订阅
+			chId="ok_sub_futureusd_"+moneyType+"_depth_next_week_10";
+			subModel.setChannel(chId);
+			//chatclient.send(JSON.toJSONString(subModel));
+			
+			//本季度合约行情订阅
+			chId = "ok_sub_futureusd_"+moneyType+"_ticker_quarter";
+			subModel.setChannel(chId);
+			//chatclient.send(JSON.toJSONString(subModel));
+			//本季度合约深度订阅
+			chId="ok_sub_futureusd_"+moneyType+"_depth_quarter_10";
+			subModel.setChannel(chId);
+			//chatclient.send(JSON.toJSONString(subModel));
 		}
 		
 		
@@ -68,45 +91,50 @@ public class WebSocketUtils_contract extends WebSocketClient {
 	//需要改这里或者另外一个OnMessage重载方法{改}
 	@Override
 	public void onMessage(ByteBuffer socketBuffer) {
-		try {
-			String marketStr = CommonUtils.byteBufferToString(socketBuffer);
-			String marketJsonStr = CommonUtils.uncompress(marketStr);
-			if (marketJsonStr.contains("ping")) {
-				//System.out.println(marketJsonStr);
-				// Client 心跳
-				chatclient.send(marketJsonStr.replace("ping", "pong"));
-			} else {
-				if (marketJsonStr.contains("depth.step1")) {//是买盘买盘数据
-					MarketDepthVo1 marketDepthVo1 = JSON.parseObject(marketJsonStr, MarketDepthVo1.class);
-					System.out.println(JSON.toJSONString(marketDepthVo1));
-				}else {//实时行情数据
-					MarketVo1 vo1 = JSON.parseObject(marketJsonStr, MarketVo1.class);
-					MarketVo2 vo2 = vo1.getTick();
-					if (vo1.getCh() != null && vo2 != null && vo2.getClose() != null) {//如果是订阅的行情数据
-						Market market = new Market();
-						market.setPlatformid(platformid);//平台id
-						market.setMoneypair(vo1.getCh().split("\\.")[1]);//交易对
-						market.setAmount(vo2.getAmount());//24小时成交量
-						market.setClose(vo2.getClose());//最新价格
-						market.setCount(vo2.getCount());//24小时成交笔数
-						market.setHigh(vo2.getHigh());//24小时最高价
-						market.setLow(vo2.getLow());//24小时最低价
-						market.setOpen(vo2.getOpen());//24小时前开盘价格
-						market.setVol(vo2.getVol());//24小时成交额
-						//添加或者更新行情数据
-						H2Util.insertOrUpdate(market);
-					}
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		System.out.println("流数据");
 	}
 	
 	//{改}
 	@Override
 	public void onMessage(String message) {
 		System.out.println("接收--received: " + message);
+		String pid=null;
+		String startStr=null;
+		String endStr=null;
+		if (message.contains("_ticker_")) {//行情
+			if (message.contains("_ticker_this_week")) {//本周行情
+				pid=platformid_this_week;
+				endStr="_ticker_this_week";
+			}else if (message.contains("_ticker_next_week")) {//下周行情
+				pid=platformid_next_week;
+				endStr="_ticker_next_week";
+			}else if (message.contains("_ticker_quarter")) {//本季度行情
+				pid=platformid_okex_quarter;
+				endStr="_ticker_quarter";
+			}
+			if (pid != null) {
+				startStr="ok_sub_futureusd_";
+				MarketContractVo1 marketContractVo1 = JSON.parseArray(message, MarketContractVo1.class).get(0);
+				MarketContractVo2 marketContractVo2 = marketContractVo1.getData();
+				
+				Market market = new Market();
+				market.setAmount(marketContractVo2.getVol());
+				market.setClose(marketContractVo2.getLast());
+				market.setHigh(marketContractVo2.getHigh());
+				market.setLow(marketContractVo2.getLow());
+				market.setMoneypair(marketContractVo1.getChannel().replace(startStr, "").replace(endStr, "")+"_usd");
+				market.setOpen(marketContractVo2.get);
+			}
+		}else if (message.contains("_depth_")) {//深度
+			if (message.contains("_depth_this_week_10")) {//本周深度
+				pid=platformid_this_week;
+			}else if (message.contains("_depth_next_week_10")) {//下周深度
+				pid=platformid_next_week;
+			}else if (message.contains("_depth_quarter_10")) {//本季度深度
+				pid=platformid_okex_quarter;
+			}
+		}
+		
 	}
 	
 	@Override
@@ -114,7 +142,7 @@ public class WebSocketUtils_contract extends WebSocketClient {
 		System.out.println("关流--Connection closed by " + (remote ? "remote peer" : "us"));
 		try {
 			WebSocketClient webSocketClient = executeWebSocket();
-			CacheData.webSocketClientMap.put(platformid, webSocketClient);
+			CacheData.webSocketClientMap.put(platformid_this_week, webSocketClient);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -168,6 +196,6 @@ public class WebSocketUtils_contract extends WebSocketClient {
 		return headers;
 	}
 	public static String getPlatFormId() {
-		return platformid;	
+		return platformid_this_week;	
 	}
 }
