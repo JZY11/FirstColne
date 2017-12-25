@@ -1,29 +1,22 @@
 package com.btb.okex.vo;
 
 public class MarketVo1 {
-	String ch;
-	Long ts;
-	MarketVo2 tick;
+	String channel;
+	MarketVo2 data;
 	
+	public String getChannel() {
+		return channel;
+	}
+	public void setChannel(String channel) {
+		this.channel = channel;
+	}
+	public MarketVo2 getData() {
+		return data;
+	}
+	public void setData(MarketVo2 data) {
+		this.data = data;
+	}
 	
-	public String getCh() {
-		return ch;
-	}
-	public void setCh(String ch) {
-		this.ch = ch;
-	}
-	public Long getTs() {
-		return ts;
-	}
-	public void setTs(Long ts) {
-		this.ts = ts;
-	}
-	public MarketVo2 getTick() {
-		return tick;
-	}
-	public void setTick(MarketVo2 tick) {
-		this.tick = tick;
-	}
 	
 	
 }

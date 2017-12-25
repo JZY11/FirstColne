@@ -3,19 +3,60 @@ package com.btb.okex.vo;
 import java.math.BigDecimal;
 
 public class MarketVo2 {
-	BigDecimal amount;
-	BigDecimal open;
-	BigDecimal close;
+	Long timestamp;
 	BigDecimal high;
-	Long id;
-	BigDecimal count;
-	BigDecimal vol;
 	BigDecimal low;
-	public BigDecimal getAmount() {
-		return amount;
+	BigDecimal vol;//24小时的成交量
+	BigDecimal close;
+	BigDecimal open;
+	BigDecimal last;
+	BigDecimal buy;
+	BigDecimal change;
+	BigDecimal sell;
+	BigDecimal dayLow;
+	BigDecimal dayHigh;
+	
+	public Long getTimestamp() {
+		return timestamp;
 	}
-	public void setAmount(BigDecimal amount) {
-		this.amount = amount;
+	public void setTimestamp(Long timestamp) {
+		this.timestamp = timestamp;
+	}
+	public BigDecimal getLast() {
+		return last;
+	}
+	public void setLast(BigDecimal last) {
+		this.last = last;
+	}
+	public BigDecimal getBuy() {
+		return buy;
+	}
+	public void setBuy(BigDecimal buy) {
+		this.buy = buy;
+	}
+	public BigDecimal getChange() {
+		return change;
+	}
+	public void setChange(BigDecimal change) {
+		this.change = change;
+	}
+	public BigDecimal getSell() {
+		return sell;
+	}
+	public void setSell(BigDecimal sell) {
+		this.sell = sell;
+	}
+	public BigDecimal getDayLow() {
+		return dayLow;
+	}
+	public void setDayLow(BigDecimal dayLow) {
+		this.dayLow = dayLow;
+	}
+	public BigDecimal getDayHigh() {
+		return dayHigh;
+	}
+	public void setDayHigh(BigDecimal dayHigh) {
+		this.dayHigh = dayHigh;
 	}
 	public BigDecimal getOpen() {
 		return open;
@@ -34,18 +75,6 @@ public class MarketVo2 {
 	}
 	public void setHigh(BigDecimal high) {
 		this.high = high;
-	}
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
-	public BigDecimal getCount() {
-		return count;
-	}
-	public void setCount(BigDecimal count) {
-		this.count = count;
 	}
 	public BigDecimal getVol() {
 		return vol;

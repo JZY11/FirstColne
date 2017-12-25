@@ -36,14 +36,13 @@ import com.btb.util.CacheData;
 import com.btb.util.DBUtil;
 import com.btb.util.H2Util;
 import com.btb.util.SpringUtil;
-
-public class WebSocketUtils2 extends WebSocketClient {
+public class WebSocketUtils_contract extends WebSocketClient {
 	//{改}
-	private static final String url = "wss://api.huobi.pro/ws";
+	private static final String url = "wss://real.okex.com:10440/websocket/okexapi";
 	
-	private static WebSocketUtils2 chatclient = null;
+	private static WebSocketUtils_contract chatclient = null;
 	private static String platformid;
-	public WebSocketUtils2(URI serverUri, Map<String, String> headers, int connecttimeout) {
+	public WebSocketUtils_contract(URI serverUri, Map<String, String> headers, int connecttimeout) {
 		super(serverUri, new Draft_17(), headers, connecttimeout);
 		platformid=new HttpUtil_okex().getPlatformId();
 	}
@@ -55,14 +54,12 @@ public class WebSocketUtils2 extends WebSocketClient {
 			SubModel subModel = new SubModel();
 			//打开后添加实时行情订阅
 			String chId = "market."+thirdpartysupportmoney.getMoneypair()+".detail";
-			subModel.setId(chId);
-			subModel.setSub(chId);
+			subModel.setChannel(chId);
 			chatclient.send(JSON.toJSONString(subModel));
 			
 			//添加买卖盘行情订阅
 			chId="market."+thirdpartysupportmoney.getMoneypair()+".depth.step1";
-			subModel.setId(chId);
-			subModel.setSub(chId);
+			subModel.setChannel(chId);
 			chatclient.send(JSON.toJSONString(subModel));
 		}
 		
@@ -127,7 +124,7 @@ public class WebSocketUtils2 extends WebSocketClient {
 	//不需要动
 	public static WebSocketClient executeWebSocket() throws Exception {
 		//WebSocketImpl.DEBUG = true;
-		chatclient = new WebSocketUtils2(new URI(url), getWebSocketHeaders(), 1000);
+		chatclient = new WebSocketUtils_contract(new URI(url), getWebSocketHeaders(), 1000);
 		trustAllHosts(chatclient);//添加ssh安全信任
 		chatclient.connect();//异步链接
 		return chatclient;
@@ -145,7 +142,7 @@ public class WebSocketUtils2 extends WebSocketClient {
 		System.out.println("WebSocket 连接异常: " + ex);
 		ex.printStackTrace();
 	}
-	private static void trustAllHosts(WebSocketUtils2 appClient) {
+	private static void trustAllHosts(WebSocketUtils_contract appClient) {
 		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
 			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
 				return new java.security.cert.X509Certificate[] {};

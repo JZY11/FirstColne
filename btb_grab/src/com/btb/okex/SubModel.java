@@ -1,24 +1,18 @@
 package com.btb.okex;
 
 public class SubModel {
-	private String sub;
-	private String id;
-
-	public String getSub() {
-		return sub;
+	private String channel;
+	private String event="addChannel";
+	public String getChannel() {
+		return channel;
 	}
-
-	public void setSub(String sub) {
-		this.sub = sub;
+	public void setChannel(String channel) {
+		this.channel = channel;
 	}
-
-	public String getId() {
-		return id;
+	public String getEvent() {
+		return event;
 	}
-
-	public void setId(String id) {
-		this.id = id;
+	public void setEvent(String event) {
+		this.event = event;
 	}
-
-	
 }
