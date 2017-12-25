@@ -26,23 +26,51 @@ import com.btb.util.TaskUtil;
 public class Main {
 	public static void main(String[] args) {
 		//初始化所有的HttpUtil,启动执行一次
-		Map<String, BaseHttp> beanHttpMap = SpringUtil.context.getBeansOfType(BaseHttp.class);
-		for (BaseHttp baseHttp : beanHttpMap.values()) {
-			CacheData.httpBeans.put(baseHttp.getPlatformId(), baseHttp);
-		}
+		InitAllHttpUtils();
 		
 		//从数据库获取所有交易对,只有启动的时候使用
 		TaskUtil.initMoneypair();
 		
 		//银行利率每天执行一次,1个任务
+		addJobRate();
+		
+		//--采集每个平台支持的交易对, 多少平台多少线程,大概200多个线程
+		addMoneyDuiJobs();
+		
+		//采集k线图分钟数据,每1.5分钟执行一次, 每个平台一个线程,大概200个线程
+		//获取平台所有交易对
+		addKlineJobs();
+		
+		//采集比特币流通数量,暂时先关闭,接口采集来源需要优化
+		//addMoneyCountJob();
+		
+		//每隔30秒检查一次所有websoket的链接状态,如果断链,重新链接
+		addCheckWebSocketStatusJob();
+		
+		//所有平台的行情数据采集,,由于需要实时性,所以只能使用websoket
+		//获取所有平台的websoket类
+		enableWebSocket();
+	}
+	
+	//初始化所有的HttpUtil,启动执行一次
+	public static void InitAllHttpUtils() {
+		Map<String, BaseHttp> beanHttpMap = SpringUtil.context.getBeansOfType(BaseHttp.class);
+		for (BaseHttp baseHttp : beanHttpMap.values()) {
+			CacheData.httpBeans.put(baseHttp.getPlatformId(), baseHttp);
+		}
+	}
+	//银行利率每天执行一次,1个任务
+	public static void addJobRate() {
 		try {
 			JobManager.addJob(new RateJob());
 		} catch (SchedulerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		//--采集每个平台支持的交易对, 多少平台多少线程,大概200多个线程
+	}
+	
+	//--采集每个平台支持的交易对, 多少平台多少线程,大概200多个线程
+	public static void addMoneyDuiJobs() {
 		try {
 			BuyParmeterJob buyParmeterJob = new BuyParmeterJob();
 			JobManager.addJob(buyParmeterJob);
@@ -50,34 +78,42 @@ public class Main {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		//采集k线图分钟数据,每1.5分钟执行一次, 每个平台一个线程,大概200个线程
-		//获取平台所有交易对
-		/*try {
+	}
+	
+	//采集k线图分钟数据,每1.5分钟执行一次, 每个平台一个线程,大概200个线程
+	//获取平台所有交易对
+	public static void addKlineJobs() {
+		try {
 			MarketHistoryKlineJob marketHistoryKlineJob = new MarketHistoryKlineJob();
 			JobManager.addJob(marketHistoryKlineJob);
 		} catch (SchedulerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}*/
-		
-		//采集比特币流通数量,暂时先关闭,接口采集来源需要优化
-		/*try {
+		}
+	}
+	
+	//获取比特币数量
+	public static void addMoneyCountJob() {
+		try {
 			JobManager.addJob(new BtbConutJob());
 		} catch (SchedulerException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-		}*/
-		
-		//每隔30秒检查一次所有websoket的链接状态,如果断链,重新链接
-		/*try {
+		}
+	}
+	
+	//检查websocket任务的状态,关闭的重连
+	public static void addCheckWebSocketStatusJob() {
+		try {
 			JobManager.addJob(new CheckWebSocketStatusJob());
 		} catch (SchedulerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//所有平台的行情数据采集,,由于需要实时性,所以只能使用websoket
-		//获取所有平台的websoket类
+	}
+	
+	//开启websocket服务
+	public static void enableWebSocket() {
 		List<Class<WebSocketClient>> webSocketUtils = StringUtil.getAllWebSocketUtils();
 		for (Class<WebSocketClient> webSocketUtil : webSocketUtils) {
 			try {
@@ -100,7 +136,7 @@ public class Main {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}*/
+		}
 	}
 	
 }

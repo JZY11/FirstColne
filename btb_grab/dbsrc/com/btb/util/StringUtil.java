@@ -90,20 +90,25 @@ public class StringUtil {
 			File file = new File(url.getPath());
 			File[] files = file.listFiles();
 			for (File file2 : files) {
-				 File file3 = new File(file2.getPath()+"\\WebSocketUtils.class");
-				 if (file3.exists()) {
-					String path = file3.getPath();
-					Class<WebSocketClient> forName;
-					try {
-						forName = (Class<WebSocketClient>) Class.forName(path.substring(path.indexOf("com\\btb\\"), path.lastIndexOf(".class")).replaceAll("\\\\", "\\."));
-						websocketUtils.add(forName);
-					} catch (ClassNotFoundException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+				File[] listFiles = file2.listFiles();
+				for (File file3 : listFiles) {
+					if (file3.getName().startsWith("WebSocketUtils") && !file3.getName().contains("$")) {
+						String path = file3.getPath();
+						Class<WebSocketClient> forName;
+						try {
+							forName = (Class<WebSocketClient>) Class.forName(path.substring(path.indexOf("com\\btb\\"), path.lastIndexOf(".class")).replaceAll("\\\\", "\\."));
+							websocketUtils.add(forName);
+						} catch (ClassNotFoundException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
-				 }
+				}
 			}
 		}
 		return websocketUtils;
+	}
+	public static void main(String[] args) {
+		System.out.println(getAllWebSocketUtils());
 	}
 }
