@@ -3,6 +3,7 @@ package com.btb.tasks.threads;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.alibaba.fastjson.JSON;
 import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.QueryVo;
 import com.btb.entity.Thirdpartysupportmoney;
@@ -25,28 +26,31 @@ public class BuyParmeterThread extends Thread {
 	public void run() {
 		//根据平台id获取httpUtil对象
 		BaseHttp baseHttp = CacheData.httpBeans.get(platformId);
-		List<Thirdpartysupportmoney> thirdpartysupportmoneys = new ArrayList<>();
-		baseHttp.geThirdpartysupportmoneys(thirdpartysupportmoneys );
-		ThirdpartysupportmoneyMapper mapper = SpringUtil.getBean(ThirdpartysupportmoneyMapper.class);
-		
-		QueryVo vo = new QueryVo();
-		
-		vo.setPlatformid(platformId);
-		List<String> moneypairs = new ArrayList<>();
-		
-		for (Thirdpartysupportmoney thirdpartysupportmoney : thirdpartysupportmoneys) {
-			moneypairs.add(thirdpartysupportmoney.getMoneypair());
-			int insertCount = mapper.updateByPrimaryKey(thirdpartysupportmoney);
-			if (insertCount != 1) {
-				mapper.insert(thirdpartysupportmoney);
+		if (baseHttp != null) {
+			List<Thirdpartysupportmoney> thirdpartysupportmoneys = new ArrayList<>();
+			baseHttp.geThirdpartysupportmoneys(thirdpartysupportmoneys );
+			ThirdpartysupportmoneyMapper mapper = SpringUtil.getBean(ThirdpartysupportmoneyMapper.class);
+			
+			QueryVo vo = new QueryVo();
+			
+			vo.setPlatformid(platformId);
+			List<String> moneypairs = new ArrayList<>();
+			
+			for (Thirdpartysupportmoney thirdpartysupportmoney : thirdpartysupportmoneys) {
+				moneypairs.add(thirdpartysupportmoney.getMoneypair());
+				int insertCount = mapper.updateByPrimaryKey(thirdpartysupportmoney);
+				System.out.println(JSON.toJSONString(thirdpartysupportmoney));
+				if (insertCount != 1) {
+					mapper.insert(thirdpartysupportmoney);
+				}
 			}
-		}
-		vo.setMoneypairs(moneypairs);
-		//删除不存在的
-		if (moneypairs != null && !moneypairs.isEmpty()) {
-			mapper.deleteParam(vo);
-			//重新加载数据
-			CacheData.moneyPairs.put(platformId, moneypairs);
+			vo.setMoneypairs(moneypairs);
+			//删除不存在的
+			if (moneypairs != null && !moneypairs.isEmpty()) {
+				mapper.deleteParam(vo);
+				//重新加载数据
+				CacheData.moneyPairs.put(platformId, moneypairs);
+			}
 		}
 	}
 }

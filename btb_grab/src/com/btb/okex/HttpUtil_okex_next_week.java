@@ -48,9 +48,8 @@ public class HttpUtil_okex_next_week extends BaseHttp {
 	 */
 	//@3
 	public void geThirdpartysupportmoneys(List<Thirdpartysupportmoney> thirdpartysupportmoneys) {
-		try {
 			//获取合约的交易对
-			Document document = Jsoup.connect("https://www.okex.com/ws_api.html").header("Accept-Language", "zh-cn").get();
+			Document document = JsoupUtil.getElement("https://www.okex.com/ws_api.html");
 			Element element = document.getElementsContainingOwnText("订阅合约K线数据").get(0).nextElementSibling();
 			String text = element.select("div.page-header > h1 > small").get(0).text();
 			text=text.substring(text.indexOf("：")+1);
@@ -63,10 +62,6 @@ public class HttpUtil_okex_next_week extends BaseHttp {
 				thirdpartysupportmoney.setMoneypair(string+"_usd");
 				thirdpartysupportmoneys.add(thirdpartysupportmoney);
 			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
 	/**

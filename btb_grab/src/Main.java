@@ -53,13 +53,13 @@ public class Main {
 		
 		//采集k线图分钟数据,每1.5分钟执行一次, 每个平台一个线程,大概200个线程
 		//获取平台所有交易对
-		try {
+		/*try {
 			MarketHistoryKlineJob marketHistoryKlineJob = new MarketHistoryKlineJob();
 			JobManager.addJob(marketHistoryKlineJob);
 		} catch (SchedulerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 		
 		//采集比特币流通数量,暂时先关闭,接口采集来源需要优化
 		/*try {
@@ -70,7 +70,7 @@ public class Main {
 		}*/
 		
 		//每隔30秒检查一次所有websoket的链接状态,如果断链,重新链接
-		try {
+		/*try {
 			JobManager.addJob(new CheckWebSocketStatusJob());
 		} catch (SchedulerException e) {
 			// TODO Auto-generated catch block
@@ -100,7 +100,7 @@ public class Main {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
+		}*/
 	}
 	
 }

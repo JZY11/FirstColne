@@ -48,9 +48,8 @@ public class HttpUtil_okex extends BaseHttp {
 	 */
 	//@3
 	public void geThirdpartysupportmoneys(List<Thirdpartysupportmoney> thirdpartysupportmoneys) {
-		try {
 			//采集币币交易对
-			Document document = Jsoup.connect("https://www.okex.com/ws_api.html").header("Accept-Language", "zh-cn").get();
+			Document document = JsoupUtil.getElement("https://www.okex.com/ws_api.html");
 			Element element = document.getElementsContainingOwnText("订阅行情数据").get(0).nextElementSibling();
 			String text = element.select("div.page-header").text();
 			text=text.substring(text.indexOf("：")+1);
@@ -64,10 +63,6 @@ public class HttpUtil_okex extends BaseHttp {
 				thirdpartysupportmoney.setMoneypair(string);
 				thirdpartysupportmoneys.add(thirdpartysupportmoney);
 			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
 	/**
