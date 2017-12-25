@@ -57,7 +57,7 @@ public class WebSocketUtils_bb extends WebSocketClient {
 			//打开后添加实时行情订阅
 			String chId = "ok_sub_spot_"+thirdpartysupportmoney.getMoneypair()+"_ticker";
 			subModel.setChannel(chId);
-			//chatclient.send(JSON.toJSONString(subModel));
+			chatclient.send(JSON.toJSONString(subModel));
 			
 			//添加买卖盘行情订阅
 			chId="ok_sub_spot_"+thirdpartysupportmoney.getMoneypair()+"_depth_10";
