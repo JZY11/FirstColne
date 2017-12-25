@@ -6,7 +6,7 @@ import java.util.List;
 public class MarketDepthVo2 {
 	List<BigDecimal[]> bids;
 	List<BigDecimal[]> asks;
-	Long ts;
+	Long timestamp;
 	public List<BigDecimal[]> getBids() {
 		return bids;
 	}
@@ -19,11 +19,12 @@ public class MarketDepthVo2 {
 	public void setAsks(List<BigDecimal[]> asks) {
 		this.asks = asks;
 	}
-	public Long getTs() {
-		return ts;
+	public Long getTimestamp() {
+		return timestamp;
 	}
-	public void setTs(Long ts) {
-		this.ts = ts;
+	public void setTimestamp(Long timestamp) {
+		this.timestamp = timestamp;
 	}
+
 	
 }

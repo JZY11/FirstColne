@@ -28,6 +28,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.Market;
 import com.btb.entity.Thirdpartysupportmoney;
+import com.btb.okex.vo.MarketDepthVo1;
+import com.btb.okex.vo.MarketDepthVo2;
 import com.btb.okex.vo.MarketVo1;
 import com.btb.okex.vo.MarketVo2;
 import com.btb.util.BaseHttp;
@@ -55,12 +57,12 @@ public class WebSocketUtils_bb extends WebSocketClient {
 			//打开后添加实时行情订阅
 			String chId = "ok_sub_spot_"+thirdpartysupportmoney.getMoneypair()+"_ticker";
 			subModel.setChannel(chId);
-			chatclient.send(JSON.toJSONString(subModel));
+			//chatclient.send(JSON.toJSONString(subModel));
 			
 			//添加买卖盘行情订阅
-			/*chId="market."+thirdpartysupportmoney.getMoneypair()+".depth.step1";
+			chId="ok_sub_spot_"+thirdpartysupportmoney.getMoneypair()+"_depth_10";
 			subModel.setChannel(chId);
-			chatclient.send(JSON.toJSONString(subModel));*/
+			chatclient.send(JSON.toJSONString(subModel));
 		}
 		
 		
@@ -74,24 +76,26 @@ public class WebSocketUtils_bb extends WebSocketClient {
 	//{改}
 	@Override
 	public void onMessage(String message) {
-		List<MarketVo1> list = JSON.parseArray(message, MarketVo1.class);
-		if (list != null && !list.isEmpty()) {
-			for (MarketVo1 marketVo1 : list) {
-				if (marketVo1.getChannel().startsWith("ok_")) {//正常数据数据
-					MarketVo2 marketVo2 = marketVo1.getData();
-					Market market = new Market();
-					market.setAmount(marketVo2.getVol());
-					market.setClose(marketVo2.getClose());
-					market.setHigh(marketVo2.getHigh());
-					market.setLow(marketVo2.getLow());
-					market.setMoneypair(marketVo1.getChannel().replace("ok_sub_spot_", "").replace("_ticker", ""));
-					market.setOpen(marketVo2.getOpen());
-					market.setPlatformid(platformid);
-					//添加或者更新行情数据
-					System.out.println(JSON.toJSONString(market));
-					H2Util.insertOrUpdate(market);
-				}
-			}
+		if (message.contains("_ticker")) {//行情数据
+			MarketVo1 marketVo1 = JSON.parseArray(message, MarketVo1.class).get(0);
+			MarketVo2 marketVo2 = marketVo1.getData();
+			Market market = new Market();
+			market.setAmount(marketVo2.getVol());
+			market.setClose(marketVo2.getClose());
+			market.setHigh(marketVo2.getHigh());
+			market.setLow(marketVo2.getLow());
+			market.setMoneypair(marketVo1.getChannel().replace("ok_sub_spot_", "").replace("_ticker", ""));
+			market.setOpen(marketVo2.getOpen());
+			market.setPlatformid(platformid);
+			//添加或者更新行情数据
+			System.out.println(JSON.toJSONString(market));
+			H2Util.insertOrUpdate(market);
+		}else if (message.contains("_depth_10")) {
+			MarketDepthVo1 marketDepthVo1 = JSON.parseArray(message, MarketDepthVo1.class).get(0);
+			MarketDepthVo2 marketDepthVo2 = marketDepthVo1.getData();
+			
+			
+			
 		}
 	}
 	
