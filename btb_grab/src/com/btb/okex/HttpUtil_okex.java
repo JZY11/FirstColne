@@ -80,7 +80,6 @@ public class HttpUtil_okex extends BaseHttp {
 	public void getKLineData(Markethistory marketHistory,MarketHistoryMapper marketHistoryMapper,Long size,Long dbCurrentTime) {
 			String url="https://www.okex.com/api/v1/kline.do?type=1min&size="+size+"&symbol="+marketHistory.getMoneypair();
 			String text = JsoupUtil.getJson(url);
-			System.out.println(text);
 			if (text != null) {
 				List<BigDecimal[]> data = JSON.parseArray(text, BigDecimal[].class);
 				////去除最新值,因为最新值,当前分钟还没有统计完整,
