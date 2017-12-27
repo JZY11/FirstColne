@@ -6,4 +6,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<update id="updateByTowIds" parameterType="com.btb.entity.Market">
 		update market where platformid = #{platformid} and moneypair = #{moneypair}
 	</update>
+	
+	<select id="findAllMarketInfo" resultType="com.btb.entity.Market">
+	select b.platformid,a.name as platformName,a.urlicon as platformIcon,
+	a.url as platformUrl,b.moneypair,b.moneytype,c.bitbcnname as moneytypeName,
+	c.iconurl as moneytypeIcon,b.buymoneytype,c.currentcount as allMoneyCount
+	from thirdpartyplatforminfo a
+	join thirdpartysupportmoney b on a.id = b.platformid
+	left join bitbinfo c on b.moneytype=c.bitbcode
+	</select>
+	
+	
 </mapper>

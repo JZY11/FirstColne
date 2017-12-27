@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.btb.dao.MarketHistoryMapper;
 import com.btb.entity.Markethistory;
+import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.util.BaseHttp;
 import com.btb.util.CacheData;
 import com.btb.util.SpringUtil;
@@ -16,13 +17,16 @@ public class MarketHistoryKlineTread extends Thread {
 	
 	@Override
 	public void run() {
-		MarketHistoryMapper marketHistoryMapper = SpringUtil.getBean(MarketHistoryMapper.class);
-		List<String> moneyPairs = CacheData.moneyPairs.get(platformid);
-		Markethistory marketHistory = new Markethistory();
-		marketHistory.setPlatformid(platformid);
 		
-		for (String moneyPair : moneyPairs) {
-			marketHistory.setMoneypair(moneyPair);
+		MarketHistoryMapper marketHistoryMapper = SpringUtil.getBean(MarketHistoryMapper.class);
+		List<Thirdpartysupportmoney> moneyPairs = CacheData.moneyPairs.get(platformid);
+		
+		for (Thirdpartysupportmoney thirdpartysupportmoney : moneyPairs) {
+			Markethistory marketHistory = new Markethistory();
+			marketHistory.setPlatformid(platformid);
+			marketHistory.setMoneypair(thirdpartysupportmoney.getMoneypair());
+			marketHistory.setMoneytype(thirdpartysupportmoney.getMoneytype());
+			marketHistory.setBuymoneytype(thirdpartysupportmoney.getBuymoneytype());
 			long currentTime = System.currentTimeMillis()/1000;//换算成秒级
 			Long dbCurrentTime=marketHistoryMapper.getMaxTimeId(marketHistory);
 			if (dbCurrentTime == null) {//如果第一次获取数据,直接过去一天数据

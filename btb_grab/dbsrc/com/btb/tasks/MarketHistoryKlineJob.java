@@ -17,18 +17,16 @@ import com.btb.tasks.threads.MarketHistoryKlineTread;
 import com.btb.util.BaseHttp;
 import com.btb.util.CacheData;
 import com.btb.util.SpringUtil;
+import com.btb.util.TaskUtil;
 import com.btb.util.thread.ThreadPoolManager;
 
 public class MarketHistoryKlineJob extends BaseJob {
 	//platformId, 交易对
 	@Override
 	public void execute(JobExecutionContext job) throws JobExecutionException {
-		Map<String, List<String>> moneyPairsMap = CacheData.moneyPairs;
-		for (String platformid : moneyPairsMap.keySet()) {
-			MarketHistoryKlineTread marketHistoryKlineTread = new MarketHistoryKlineTread(platformid);
-			ThreadPoolManager.workNoResult(marketHistoryKlineTread);
-		}
-		
+		TaskUtil.initKline(true);
+		//加载每个平台的btc,eth价格, 每1.5分钟执行一次,这个是执行一次,任务放在k线图里面
+		TaskUtil.initBtcEthNowMoney();
 	}
 
 	@Override

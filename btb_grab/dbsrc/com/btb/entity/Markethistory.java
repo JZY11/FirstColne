@@ -1,18 +1,34 @@
 package com.btb.entity;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import javax.persistence.Id;
 
 import com.btb.util.StringUtil;
 
 public class Markethistory {
+	public Markethistory() {
+		// TODO Auto-generated constructor stub
+	}
+	public Markethistory(String platformid,String buymoneytype) {
+		// TODO Auto-generated constructor stub
+		this.buymoneytype=buymoneytype;
+		this.platformid=platformid;
+	}
 	@Id
 	String platformid;//平台id
 	@Id
 	String moneypair;//交易对比如btcuatf
 	@Id
 	Long timeid;//timelongid
+	String moneytype;
+	String buymoneytype;
 	BigDecimal open;//1分钟时前价格
 	BigDecimal openrmb;//1分钟前价格人民币, 自动生成
 	BigDecimal close;//最新成交价
@@ -27,6 +43,18 @@ public class Markethistory {
 	BigDecimal amount;//1分钟成交量
 	
 	
+	public String getMoneytype() {
+		return moneytype;
+	}
+	public void setMoneytype(String moneytype) {
+		this.moneytype = moneytype;
+	}
+	public String getBuymoneytype() {
+		return buymoneytype;
+	}
+	public void setBuymoneytype(String buymoneytype) {
+		this.buymoneytype = buymoneytype;
+	}
 	public Long getTimeid() {
 		return timeid;
 	}
@@ -58,7 +86,7 @@ public class Markethistory {
 		this.open = open;
 	}
 	public BigDecimal getOpenrmb() {
-		openrmb=StringUtil.UsdToRmb(open);
+		openrmb=StringUtil.ToRmb(open, platformid, buymoneytype);
 		return openrmb;
 	}
 	public BigDecimal getClose() {
@@ -68,7 +96,7 @@ public class Markethistory {
 		this.close = close;
 	}
 	public BigDecimal getClosermb() {
-		closermb=StringUtil.UsdToRmb(close);
+		closermb=StringUtil.ToRmb(close, platformid, buymoneytype);
 		return closermb;
 	}
 	public BigDecimal getCount() {
@@ -90,22 +118,26 @@ public class Markethistory {
 		this.high = high;
 	}
 	public BigDecimal getLowrmb() {
-		lowrmb=StringUtil.UsdToRmb(low);
+		lowrmb=StringUtil.ToRmb(low, platformid, buymoneytype);
 		return lowrmb;
 	}
 	public BigDecimal getHighrmb() {
-		highrmb=StringUtil.UsdToRmb(high);
+		highrmb=StringUtil.ToRmb(high, platformid, buymoneytype);
 		return highrmb;
 	}
 	public BigDecimal getVol() {
+		if (vol==null) {
+			if (amount != null) {
+				vol=getClosermb().multiply(amount);
+			}
+		}
 		return vol;
 	}
 	public void setVol(BigDecimal vol) {
 		this.vol = vol;
 	}
 	public BigDecimal getVolrmb() {
-		volrmb=StringUtil.UsdToRmb(vol);
+		volrmb=StringUtil.ToRmb(vol, platformid, buymoneytype);
 		return volrmb;
 	}
-	
 }

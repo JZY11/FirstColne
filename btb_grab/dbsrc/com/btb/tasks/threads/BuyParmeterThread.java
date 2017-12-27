@@ -39,7 +39,6 @@ public class BuyParmeterThread extends Thread {
 			for (Thirdpartysupportmoney thirdpartysupportmoney : thirdpartysupportmoneys) {
 				moneypairs.add(thirdpartysupportmoney.getMoneypair());
 				int insertCount = mapper.updateByPrimaryKey(thirdpartysupportmoney);
-				System.out.println(JSON.toJSONString(thirdpartysupportmoney));
 				if (insertCount != 1) {
 					mapper.insert(thirdpartysupportmoney);
 				}
@@ -49,7 +48,7 @@ public class BuyParmeterThread extends Thread {
 			if (moneypairs != null && !moneypairs.isEmpty()) {
 				mapper.deleteParam(vo);
 				//重新加载数据
-				CacheData.moneyPairs.put(platformId, moneypairs);
+				CacheData.moneyPairs.put(platformId, thirdpartysupportmoneys);
 			}
 		}
 	}

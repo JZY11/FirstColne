@@ -38,7 +38,7 @@ public class DateUtil {
 		return dateFormat(new Date(), "yyyy-MM-dd HH:mm:ss");
 	}
 	public static String getDateNoTime() {
-		return dateFormat(new Date(), "yyyy-MM-dd HH:mm:ss");
+		return dateFormat(new Date(), "yyyy-MM-dd");
 	}
 	
 	

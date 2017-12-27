@@ -14,6 +14,6 @@ public interface ThirdpartysupportmoneyMapper extends Mapper<Thirdpartysupportmo
 	
 	List<Map<String, String>> findplatformidAll();
 	
-	List<Map<String, String>> findmoneypairByplatformid(String platformid);
+	List<Thirdpartysupportmoney> findmoneypairByplatformid(String platformid);
 	
 }

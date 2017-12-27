@@ -109,20 +109,22 @@ public class HttpUtil_okex_this_week extends BaseHttp {
 	}
 	public static void main(String[] args) {
 		
-		SpringUtil.testinitSpring();
-		//CacheData.httpBeans.get("100000000");
-		
-		HttpUtil_okex_this_week httpUtil = new HttpUtil_okex_this_week();
-		
-		Markethistory marketHistory=new Markethistory();
-		marketHistory.setPlatformid(httpUtil.getPlatformId());
-		marketHistory.setMoneypair("btc_usd");
-		httpUtil.getKLineData(marketHistory,SpringUtil.getBean(MarketHistoryMapper.class),200L,1514176860L);
-		 
 		/*
 		List<Thirdpartysupportmoney> thirdpartysupportmoneys = new ArrayList<>();
 		new HttpUtil_okex_this_week().geThirdpartysupportmoneys(thirdpartysupportmoneys);
 		*/
+		
+		SpringUtil.testinitSpring();
+		//CacheData.httpBeans.get("100000000");
+		
+		HttpUtil_okex_next_week httpUtil = new HttpUtil_okex_next_week();
+		
+		Markethistory marketHistory=new Markethistory();
+		marketHistory.setPlatformid(httpUtil.getPlatformId());
+		marketHistory.setMoneypair("btc_usd");
+		marketHistory.setMoneytype("btc");
+		marketHistory.setBuymoneytype("usd");
+		httpUtil.getKLineData(marketHistory, SpringUtil.getBean(MarketHistoryMapper.class), 10L, 1514288760L);
 	}
 	
 }

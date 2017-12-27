@@ -107,19 +107,6 @@ public class HttpUtil_okex extends BaseHttp {
 			}
 	}
 	public static void main(String[] args) {
-		SpringUtil.testinitSpring();
-		//CacheData.httpBeans.get("100000000");
-		
-		HttpUtil_okex httpUtil = new HttpUtil_okex();
-		
-		Markethistory marketHistory=new Markethistory();
-		marketHistory.setPlatformid(httpUtil.getPlatformId());
-		marketHistory.setMoneypair("btc_usdt");
-		httpUtil.getKLineData(marketHistory,SpringUtil.getBean(MarketHistoryMapper.class),200L,1514176860L);
-		 
-		
-		List<Thirdpartysupportmoney> thirdpartysupportmoneys = new ArrayList<>();
-		//new HttpUtil_okex().geThirdpartysupportmoneys(thirdpartysupportmoneys);
 	}
 	
 }

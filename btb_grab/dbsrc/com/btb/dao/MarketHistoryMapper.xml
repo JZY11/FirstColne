@@ -7,6 +7,29 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		SELECT MAX(timeId) from Markethistory where platformid = #{platformid} and moneypair = #{moneypair}
 	</select>
 	
+	<!-- 获取今日开盘价格 -->
+	<select id="findTodayOpenMoney" parameterType="com.btb.entity.Markethistory" resultType="BigDecimal">
+		select open from markethistory 
+		where platformid = #{platformid} and moneypair = #{moneypair} and timeid = #{timeid}
+	</select>
+	
+	
+	<!-- 
+		获取每个平台的btc和eth价格
+	 -->
+	<select id="findBestNewRmbByBtcAndEth" resultType="com.btb.entity.QueryVo">
+		select CONCAT(platformid,'.',moneytype) as platformid,closermb,MAX(timeid) as timeid from markethistory 
+		where 
+		(moneytype='btc' and buymoneytype='usdt') or (moneytype='eth' and buymoneytype='usdt')
+		GROUP BY CONCAT(platformid,'.',moneytype)
+	</select>
+	
+	<select id="findAllPingTaiEthAndBtc" resultType="com.btb.entity.Thirdpartysupportmoney">
+		SELECT * FROM thirdpartysupportmoney where 
+		(moneytype = 'btc' and buymoneytype='usdt') 
+		or (moneytype = 'eth' and buymoneytype='usdt')
+	</select>
+	
 	<!-- 
 	second: 传入秒, 比如1分:60秒, 1小时:3600秒
 	1分,3分,5分,10分,15分,30分,1小时,2小时,4小时,6小时,12小时,1天,3天,1周,1月 -->
@@ -16,5 +39,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		,count(timeid)
 		from markethistory GROUP BY id order by timeid desc
 	</select>
+	
+	
 	
 </mapper>

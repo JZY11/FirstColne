@@ -19,6 +19,7 @@ import com.btb.entity.Markethistory;
 import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.huobi.vo.MarketHistoryVo1;
 import com.btb.huobi.vo.MarketHistoryVo2;
+import com.btb.okex.HttpUtil_okex_quarter;
 import com.btb.util.BaseHttp;
 import com.btb.util.CacheData;
 import com.btb.util.JsoupUtil;
@@ -96,15 +97,15 @@ public class HttpUtil extends BaseHttp {
 			}
 	}
 	public static void main(String[] args) {
-		SpringUtil.testinitSpring();
-		//CacheData.httpBeans.get("100000000");
-		
 		HttpUtil httpUtil = new HttpUtil();
 		
 		Markethistory marketHistory=new Markethistory();
 		marketHistory.setPlatformid(httpUtil.getPlatformId());
 		marketHistory.setMoneypair("btcusdt");
-		//httpUtil.getKLineData(marketHistory);
+		marketHistory.setMoneytype("btc");
+		marketHistory.setBuymoneytype("usdt");
+		httpUtil.getKLineData(marketHistory, SpringUtil.getBean(MarketHistoryMapper.class), 10L, 1514288760L);
+		 
 	}
 	
 }

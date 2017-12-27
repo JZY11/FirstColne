@@ -14,8 +14,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		select distinct platformid from thirdpartysupportmoney
 	</select>
 	
-	<select id="findmoneypairByplatformid" parameterType="string" resultType="map">
-		select moneypair from thirdpartysupportmoney where platformid = #{platformid}
+	<select id="findmoneypairByplatformid" parameterType="string" resultType="com.btb.entity.Thirdpartysupportmoney">
+		select * from thirdpartysupportmoney where platformid = #{platformid}
 	</select>
 	
 </mapper>

@@ -36,6 +36,7 @@ import com.btb.util.CacheData;
 import com.btb.util.DBUtil;
 import com.btb.util.H2Util;
 import com.btb.util.SpringUtil;
+import com.btb.util.StringUtil;
 
 public class WebSocketUtils extends WebSocketClient {
 	//{改}
@@ -89,13 +90,9 @@ public class WebSocketUtils extends WebSocketClient {
 						Market market = new Market();
 						market.setPlatformid(platformid);//平台id
 						market.setMoneypair(vo1.getCh().split("\\.")[1]);//交易对
-						market.setAmount(vo2.getAmount());//24小时成交量
+						String[] strings = StringUtil.getHuobiBuyMoneytype(market.getMoneypair());
+						market.setBuymoneytype(strings[0]);
 						market.setClose(vo2.getClose());//最新价格
-						market.setCount(vo2.getCount());//24小时成交笔数
-						market.setHigh(vo2.getHigh());//24小时最高价
-						market.setLow(vo2.getLow());//24小时最低价
-						market.setOpen(vo2.getOpen());//24小时前开盘价格
-						market.setVol(vo2.getVol());//24小时成交额
 						//添加或者更新行情数据
 						H2Util.insertOrUpdate(market);
 					}

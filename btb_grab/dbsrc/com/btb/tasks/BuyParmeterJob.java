@@ -40,13 +40,7 @@ public class BuyParmeterJob extends BaseJob {
 		// TODO Auto-generated method stub
 		System.out.println("job-  采集交易对");
 		//获取所有平台
-		ThirdpartyplatforminfoMpper thirdpartyplatforminfoMpper = SpringUtil.getBean(ThirdpartyplatforminfoMpper.class);
-		List<Thirdpartyplatforminfo> thirdpartyplatfos = thirdpartyplatforminfoMpper.selectAll();
-		//循环多编程,采集每个平台的交易对
-		for (Thirdpartyplatforminfo thirdpartyplatforminfo : thirdpartyplatfos) {
-			BuyParmeterThread buyParmeterThread = new BuyParmeterThread(thirdpartyplatforminfo.getId());
-			ThreadPoolManager.workNoResult(buyParmeterThread);
-		}
+		TaskUtil.initMoneypair(true);
 	}
 
 	@Override

@@ -16,13 +16,7 @@ public class RateJob extends BaseJob {
 	@Override
 	public void execute(JobExecutionContext job) throws JobExecutionException {
 		// TODO Auto-generated method stub
-		try {
-			TaskUtil.initWaiHui();
-			System.out.println("=============job-rate=============");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		TaskUtil.initWaiHui();
 	}
 
 	@Override

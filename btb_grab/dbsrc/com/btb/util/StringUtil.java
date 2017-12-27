@@ -8,6 +8,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -62,6 +64,9 @@ public class StringUtil {
 	 * @return
 	 */
 	public static BigDecimal getbaifenbi(BigDecimal open,BigDecimal close) {
+		if (open==null || close==null) {
+			return null;
+		}
 		return close.subtract(open).divide(open,8,RoundingMode.HALF_UP).multiply(new BigDecimal(100));
 	}
 	/**
@@ -69,11 +74,45 @@ public class StringUtil {
 	 * @param usdMoney
 	 * @return
 	 */
-	public static BigDecimal UsdToRmb(BigDecimal usdMoney) {
+	public static BigDecimal ToRmb(BigDecimal usdMoney,String platformid,String moneytype) {
 		if (usdMoney==null) {
 			return null;
 		}
-		return usdMoney.divide(CacheData.rateMap.get("USD"), 2, RoundingMode.HALF_UP);
+		if (platformid == null || moneytype == null) {
+			try {
+				throw new Exception("平台id和交易币种类型,为空了");
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		if (moneytype.equals("btc") || moneytype.equals("eth")) {
+			BigDecimal fabiToRmb = CacheData.nowBtcEthRmb.get(platformid+"."+moneytype).multiply(usdMoney);
+			return fabiToRmb;
+		}else {
+			if (moneytype.equals("usdt")) {
+				moneytype="USD";
+			}
+			return fabiToRmb(usdMoney, moneytype);
+		}
+	}
+	
+	public static BigDecimal fabiToRmb(BigDecimal usdMoney,String moneyType) {
+		if (moneyType==null) {
+			moneyType="USD";
+		}
+		if (usdMoney==null) {
+			return null;
+		}
+		BigDecimal rabe = CacheData.rateMap.get(moneyType.toUpperCase());
+		return usdMoney.divide(rabe, 8, RoundingMode.HALF_UP);
+	}
+	public static BigDecimal fabiToRmb(BigDecimal usdMoney) {
+		String moneyType="USD";
+		if (usdMoney==null) {
+			return null;
+		}
+		return usdMoney.divide(CacheData.rateMap.get(moneyType), 8, RoundingMode.HALF_UP);
 	}
 	
 	public static List<Class<WebSocketClient>> getAllWebSocketUtils() {
@@ -108,6 +147,32 @@ public class StringUtil {
 		}
 		return websocketUtils;
 	}
+	
+	public static long get0time() {
+		try {
+			return new SimpleDateFormat("yyyy-MM-dd").parse(DateUtil.getDateNoTime()).getTime();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return 0;
+	}
+	
+	public static String[] getHuobiBuyMoneytype(String moneypair) {
+		String[] jiaoyidui=new String[2];
+		if (moneypair.endsWith("usdt")) {
+			jiaoyidui[0]="usdt";
+			jiaoyidui[1]=moneypair.substring(0, moneypair.length()-4);
+		}else if (moneypair.endsWith("btc")) {
+			jiaoyidui[0]="btc";
+			jiaoyidui[1]=moneypair.substring(0, moneypair.length()-3);
+		}else if (moneypair.endsWith("eth")) {
+			jiaoyidui[0]="eth";
+			jiaoyidui[1]=moneypair.substring(0, moneypair.length()-3);
+		}
+		return jiaoyidui;
+	}
+	
 	public static void main(String[] args) {
 		System.out.println(getAllWebSocketUtils());
 	}

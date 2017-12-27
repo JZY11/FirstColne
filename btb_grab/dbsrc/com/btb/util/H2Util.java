@@ -1,5 +1,9 @@
 package com.btb.util;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -32,9 +36,6 @@ public class H2Util {
     	dataSource.setDefaultAutoCommit(true);
     	dataSource.setValidationQuery("SELECT 'x'");
     }  
-	static{
-		initTable();
-	}
 	private static Connection getconn() {
 		try {
 			return dataSource.getConnection();
@@ -108,21 +109,50 @@ public class H2Util {
 	public static void initTable() {
 		//创建行情表
 		exec("create table IF NOT EXISTS market("
-				+ "id varchar(255) PRIMARY KEY,"
+				//基础数据
+				+ "id varchar(255) PRIMARY KEY,"//平台id.交易对
 				+ "platformid varchar(255),"
+				+ "platformIcon CLOB(255),"
+				+ "platformUrl CLOB(255),"
+				+ "platformName varchar(255),"
+				+ "moneytype varchar(255),"
+				+ "moneytypeName varchar(255),"
+				+ "moneytypeIcon CLOB(255),"
+				+ "moneytypeUrl CLOB(255),"
+				+ "buymoneytype varchar(255),"
 				+ "moneypair varchar(255),"
-				+ "open DECIMAL(28,8),"
-				+ "openrmb DECIMAL(28,8),"
+				
+				//行情数据实时采集
 				+ "close DECIMAL(28,8),"
 				+ "closermb DECIMAL(28,8),"
+				+ "zhangfu DECIMAL(28,8),"
+				+ "zhangfuMoneyrmb DECIMAL(28,8),"
+				
+				//深度图数据实时采集
+				+ "buy DECIMAL(28,8),"
+				+ "sell DECIMAL(28,8),"
+				+ "buyrmb DECIMAL(28,8),"
+				+ "sellrmb DECIMAL(28,8),"
+				
+				//提取k线图表,凌晨0点收盘价格
+				+ "open DECIMAL(28,8),"
+				+ "openrmb DECIMAL(28,8),"
+				
+				//数据定时计算流通市值
+				+ "allMoneyCount DECIMAL(28,8),"
+				+ "allMoneyrmb DECIMAL(28,8),"
+				
+				//k线图定时计算
 				+ "low DECIMAL(28,8),"
 				+ "lowrmb DECIMAL(28,8),"
 				+ "high DECIMAL(28,8),"
 				+ "highrmb DECIMAL(28,8),"
 				+ "vol DECIMAL(28,8),"
-				+ "volrmb DECIMAL(28,8)"
+				+ "volrmb DECIMAL(28,8),"
+				+ "count DECIMAL(28,8),"
+				+ "amount DECIMAL(28,8)"
 				+ ")");
-		//创建交易平台信息表
+		/*//创建交易平台信息表
 		exec("create table IF NOT EXISTS thirdpartyplatforminfo("
 				+ "id varchar(255) PRIMARY KEY,"
 				+ "name varchar(255),"
@@ -140,45 +170,84 @@ public class H2Util {
 				+ "allcount DECIMAL(28,8),"
 				+ "iconurl CLOB,"
 				+ "desc CLOB"
-				+ ")");
+				+ ")");*/
 	}
-	
+	public static Map<String, Method> columns = getColumns();
+	private static Map<String, Method> getColumns() {
+		Map<String, Method> columns=new HashMap<>();
+		Field[] fields = Market.class.getDeclaredFields();
+		for (Field field : fields) {
+			String fieldName = field.getName();
+			try {
+				if (!fieldName.equals("id")) {
+					columns.put(fieldName, Market.class.getMethod("get"+fieldName.substring(0,1).toUpperCase()+fieldName.substring(1)));
+				}
+			} catch (NoSuchMethodException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return columns;
+	}
 	
 	public static void insertOrUpdate(Market market) {
 		Connection connection = getconn();
-		String sql="update market set open=?,openrmb=?,close=?,closermb=?,low=?,lowrmb=?,high=?,highrmb=?,vol=?,volrmb=? where id=?";
+		List<Object> parms=new ArrayList<>();
+		String sql="update market set ";
+		for(String columName:columns.keySet()){
+			Method method = columns.get(columName);
+			try {
+				Object object = method.invoke(market, null);
+				if (object != null) {
+					sql+=columName+"=?,";
+					parms.add(object);
+				}
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		if (sql.endsWith(",")) {
+			sql=sql.substring(0, sql.length()-1);
+		}
+		sql+= " where id=?";
+		System.out.println(sql);
+		parms.add(market.getId());
 		try {
 			PreparedStatement prepareStatement = connection.prepareStatement(sql);
-			int parameterIndex = 0;
-			prepareStatement.setBigDecimal(++parameterIndex, market.getOpen());
-			prepareStatement.setBigDecimal(++parameterIndex, market.getOpenrmb());
-			prepareStatement.setBigDecimal(++parameterIndex, market.getClose());
-			prepareStatement.setBigDecimal(++parameterIndex, market.getClosermb());
-			prepareStatement.setBigDecimal(++parameterIndex, market.getLow());
-			prepareStatement.setBigDecimal(++parameterIndex, market.getLowrmb());
-			prepareStatement.setBigDecimal(++parameterIndex, market.getHigh());
-			prepareStatement.setBigDecimal(++parameterIndex, market.getHighrmb());
-			prepareStatement.setBigDecimal(++parameterIndex, market.getVol());
-			prepareStatement.setBigDecimal(++parameterIndex, market.getVolrmb());
-			prepareStatement.setString(++parameterIndex,market.getPlatformid()+"-"+market.getMoneypair());
+			for (int i=0;i<parms.size();i++) {
+				prepareStatement.setObject(i+1, parms.get(i));
+			}
 			int updateCount = prepareStatement.executeUpdate();
 			if (updateCount != 1) {//如果不存在,需要先添加
-				sql="insert into market values(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+				sql="insert into market(id,";
+				String insertColumnStr="";
+				String zhanwei="?,";
+				parms=new ArrayList<>();
+				parms.add(market.getId());
+				for(String columName:columns.keySet()){
+					Method method = columns.get(columName);
+					try {
+						Object object = method.invoke(market, null);
+						if (object != null) {
+							insertColumnStr+=columName+",";
+							parms.add(object);
+							zhanwei+="?,";
+						}
+					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				sql+= insertColumnStr.substring(0,insertColumnStr.length()-1)+") values("+zhanwei.substring(0, zhanwei.length()-1)+")";
+				System.out.println(sql);
 				PreparedStatement prepareStatement2 = connection.prepareStatement(sql);
-				int parameterIndex2 = 0;
-				prepareStatement2.setString(++parameterIndex2,market.getPlatformid()+"-"+market.getMoneypair());
-				prepareStatement2.setString(++parameterIndex2,market.getPlatformid());
-				prepareStatement2.setString(++parameterIndex2,market.getMoneypair());
-				prepareStatement2.setBigDecimal(++parameterIndex2, market.getOpen());
-				prepareStatement2.setBigDecimal(++parameterIndex2, market.getOpenrmb());
-				prepareStatement2.setBigDecimal(++parameterIndex2, market.getClose());
-				prepareStatement2.setBigDecimal(++parameterIndex2, market.getClosermb());
-				prepareStatement2.setBigDecimal(++parameterIndex2, market.getLow());
-				prepareStatement2.setBigDecimal(++parameterIndex2, market.getLowrmb());
-				prepareStatement2.setBigDecimal(++parameterIndex2, market.getHigh());
-				prepareStatement2.setBigDecimal(++parameterIndex2, market.getHighrmb());
-				prepareStatement2.setBigDecimal(++parameterIndex2, market.getVol());
-				prepareStatement2.setBigDecimal(++parameterIndex2, market.getVolrmb());
+				for (int i=0;i<parms.size();i++) {
+					prepareStatement2.setObject(i+1, parms.get(i));
+				}
 				prepareStatement2.executeUpdate();
 			}
 			closeConn(connection);
@@ -192,7 +261,12 @@ public class H2Util {
 	
 	public static void main(String[] args) {
 		initTable();
-		exec("insert into market values('xx','xx','xx',10.2,10.2,10.2,10.2,10.2,10.2,10.2,10.2,10.2,10.2)");
+		Market market=new Market(null, null);
+		market.setPlatformid("test");
+		market.setMoneypair("btcUsdt");
+		market.setClose(new BigDecimal(10));
+		market.setOpen(new BigDecimal(11));
+		insertOrUpdate(market);
 		
 		System.out.println(select("select * from market"));;
 	}
