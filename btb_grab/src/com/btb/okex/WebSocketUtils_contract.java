@@ -146,7 +146,7 @@ public class WebSocketUtils_contract extends WebSocketClient {
 			if (pid != null) {
 				MarketDepthVo1 marketDepthVo1 = JSON.parseArray(message, MarketDepthVo1.class).get(0);
 				String moneypair = marketDepthVo1.getChannel().replace("ok_sub_spot_", "").replace(endStr, "")+"_usd";
-				CacheData.sellBuyDisk.put(pid, marketDepthVo1.getData());
+				CacheData.sellBuyDisk.put(pid+"."+moneypair, marketDepthVo1.getData());
 			}
 			
 		}
