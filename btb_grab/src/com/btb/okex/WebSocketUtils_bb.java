@@ -14,28 +14,19 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.java_websocket.WebSocket.READYSTATE;
-import org.java_websocket.WebSocketImpl;
 import org.java_websocket.client.DefaultSSLWebSocketClientFactory;
 import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_17;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ServerHandshake;
-
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.Market;
 import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.okex.vo.MarketDepthVo1;
-import com.btb.okex.vo.MarketDepthVo2;
 import com.btb.okex.vo.MarketVo1;
-import com.btb.util.BaseHttp;
 import com.btb.util.CacheData;
 import com.btb.util.DBUtil;
 import com.btb.util.H2Util;
-import com.btb.util.SpringUtil;
 import com.btb.util.TaskUtil;
 
 public class WebSocketUtils_bb extends WebSocketClient {
@@ -100,10 +91,8 @@ public class WebSocketUtils_bb extends WebSocketClient {
 			} catch (Exception e) {}
 		}else if (message.contains("_depth_10")) {
 			MarketDepthVo1 marketDepthVo1 = JSON.parseArray(message, MarketDepthVo1.class).get(0);
-			MarketDepthVo2 marketDepthVo2 = marketDepthVo1.getData();
-			
-			
-			
+			String moneypair = marketDepthVo1.getChannel().replace("ok_sub_spot_", "").replace("_depth_10", "");
+			CacheData.sellBuyDisk.put(platformid, marketDepthVo1.getData());
 		}
 	}
 	

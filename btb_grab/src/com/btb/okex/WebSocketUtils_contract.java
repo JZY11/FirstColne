@@ -29,12 +29,13 @@ import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.Market;
 import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.okex.vo.MarketContractVo1;
-import com.btb.okex.vo.MarketDepthVo2;
+import com.btb.okex.vo.MarketDepthVo1;
 import com.btb.util.BaseHttp;
 import com.btb.util.CacheData;
 import com.btb.util.DBUtil;
 import com.btb.util.H2Util;
 import com.btb.util.SpringUtil;
+import com.btb.util.TaskUtil;
 public class WebSocketUtils_contract extends WebSocketClient {
 	//{改}
 	private static final String url = "wss://real.okex.com:10440/websocket/okexapi";
@@ -61,25 +62,25 @@ public class WebSocketUtils_contract extends WebSocketClient {
 			//本周合约深度订阅
 			chId="ok_sub_futureusd_"+moneyType+"_depth_this_week_10";
 			subModel.setChannel(chId);
-			//chatclient.send(JSON.toJSONString(subModel));
+			chatclient.send(JSON.toJSONString(subModel));
 			
 			//下周合约行情订阅
 			chId = "ok_sub_futureusd_"+moneyType+"_trade_next_week";
 			subModel.setChannel(chId);
-			//chatclient.send(JSON.toJSONString(subModel));
+			chatclient.send(JSON.toJSONString(subModel));
 			//下周合约深度订阅
 			chId="ok_sub_futureusd_"+moneyType+"_depth_next_week_10";
 			subModel.setChannel(chId);
-			//chatclient.send(JSON.toJSONString(subModel));
+			chatclient.send(JSON.toJSONString(subModel));
 			
 			//本季度合约行情订阅
 			chId = "ok_sub_futureusd_"+moneyType+"_trade_quarter";
 			subModel.setChannel(chId);
-			//chatclient.send(JSON.toJSONString(subModel));
+			chatclient.send(JSON.toJSONString(subModel));
 			//本季度合约深度订阅
 			chId="ok_sub_futureusd_"+moneyType+"_depth_quarter_10";
 			subModel.setChannel(chId);
-			//chatclient.send(JSON.toJSONString(subModel));
+			chatclient.send(JSON.toJSONString(subModel));
 		}
 		
 		
@@ -134,11 +135,20 @@ public class WebSocketUtils_contract extends WebSocketClient {
 		}else if (message.contains("_depth_")) {//深度
 			if (message.contains("_depth_this_week_10")) {//本周深度
 				pid=platformid_this_week;
+				endStr="_depth_this_week_10";
 			}else if (message.contains("_depth_next_week_10")) {//下周深度
 				pid=platformid_next_week;
+				endStr="_depth_next_week_10";
 			}else if (message.contains("_depth_quarter_10")) {//本季度深度
 				pid=platformid_okex_quarter;
+				endStr="_depth_quarter_10";
 			}
+			if (pid != null) {
+				MarketDepthVo1 marketDepthVo1 = JSON.parseArray(message, MarketDepthVo1.class).get(0);
+				String moneypair = marketDepthVo1.getChannel().replace("ok_sub_spot_", "").replace(endStr, "")+"_usd";
+				CacheData.sellBuyDisk.put(pid, marketDepthVo1.getData());
+			}
+			
 		}
 		
 	}
@@ -165,6 +175,7 @@ public class WebSocketUtils_contract extends WebSocketClient {
 		//System.out.println(chatclient.getReadyState());// 获取链接状态,OPEN是链接状态,CONNECTING: 正在链接状态
 	}
 	public static void main(String[] args) throws Exception {
+		TaskUtil.initStartAll();
 		executeWebSocket();
 	}
 	

@@ -1,8 +1,10 @@
 package com.btb.okex.vo;
 
+import com.btb.entity.MarketDepthVo;
+
 public class MarketDepthVo1 {
 	String channel;
-	MarketDepthVo2 data;
+	MarketDepthVo data;
 	
 	public String getChannel() {
 		return channel;
@@ -10,12 +12,13 @@ public class MarketDepthVo1 {
 	public void setChannel(String channel) {
 		this.channel = channel;
 	}
-	public MarketDepthVo2 getData() {
+	public MarketDepthVo getData() {
 		return data;
 	}
-	public void setData(MarketDepthVo2 data) {
+	public void setData(MarketDepthVo data) {
 		this.data = data;
 	}
+	
 	
 	
 }

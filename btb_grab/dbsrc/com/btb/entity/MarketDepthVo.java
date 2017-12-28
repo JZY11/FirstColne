@@ -1,9 +1,9 @@
-package com.btb.huobi.vo;
+package com.btb.entity;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-public class MarketDepthVo2 {
+public class MarketDepthVo {
 	List<BigDecimal[]> bids;
 	List<BigDecimal[]> asks;
 	Long ts;

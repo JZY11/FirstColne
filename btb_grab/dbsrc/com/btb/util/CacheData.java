@@ -15,6 +15,7 @@ import org.java_websocket.client.WebSocketClient;
 import com.btb.dao.MarketHistoryMapper;
 import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.Bitbinfo;
+import com.btb.entity.MarketDepthVo;
 import com.btb.entity.Markethistory;
 import com.btb.entity.Thirdpartysupportmoney;
 
@@ -34,6 +35,8 @@ public class CacheData  {
 	//获取每个平台的btc,eth实时价格,用于转换成人民币
 	//Map<交易平台id.btc/eth>
 	public static Map<String, BigDecimal> nowBtcEthRmb=new HashMap<>();
+	//买卖盘Map<交易平台id.交易对,买卖盘>
+	public static Map<String, MarketDepthVo> sellBuyDisk = new HashMap<>();
 	
 	static{
 		rateMap.put("USD", new BigDecimal("0.1513200000"));
