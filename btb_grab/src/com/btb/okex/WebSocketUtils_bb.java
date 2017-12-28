@@ -92,7 +92,7 @@ public class WebSocketUtils_bb extends WebSocketClient {
 		}else if (message.contains("_depth_10")) {
 			MarketDepthVo1 marketDepthVo1 = JSON.parseArray(message, MarketDepthVo1.class).get(0);
 			String moneypair = marketDepthVo1.getChannel().replace("ok_sub_spot_", "").replace("_depth_10", "");
-			CacheData.sellBuyDisk.put(platformid, marketDepthVo1.getData());
+			CacheData.sellBuyDisk.put(platformid+"."+moneypair, marketDepthVo1.getData());
 		}
 	}
 	
