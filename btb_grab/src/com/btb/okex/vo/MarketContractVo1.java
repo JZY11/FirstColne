@@ -1,8 +1,10 @@
 package com.btb.okex.vo;
 
+import java.util.List;
+
 public class MarketContractVo1 {
 	String channel;
-	MarketContractVo2 data;
+	List<Object[]> data;
 	
 	public String getChannel() {
 		return channel;
@@ -10,10 +12,10 @@ public class MarketContractVo1 {
 	public void setChannel(String channel) {
 		this.channel = channel;
 	}
-	public MarketContractVo2 getData() {
+	public List<Object[]> getData() {
 		return data;
 	}
-	public void setData(MarketContractVo2 data) {
+	public void setData(List<Object[]> data) {
 		this.data = data;
 	}
 	

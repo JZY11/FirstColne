@@ -26,8 +26,6 @@ import com.btb.util.TaskUtil;
 
 public class Main {
 	public static void main(String[] args) {
-		//h2创建表
-		H2Util.initTable();
 		//初始化所有的HttpUtil,方便采集k线图和交易对
 		InitAllHttpUtils();
 		//采集所有平台中的交易对,同步
@@ -44,6 +42,8 @@ public class Main {
 		TaskUtil.initTodayOpen();
 		//初始化所有实时行情信息,到h2数据库中
 		TaskUtil.initMarketAllToH2DB();
+		//从数据库里面加载最新的比特币数量
+		TaskUtil.initBtcCountByDb();
 		
 		//银行利率每天执行一次,1个任务
 		//addJobRate();

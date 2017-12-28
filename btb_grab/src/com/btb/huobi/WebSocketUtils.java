@@ -30,13 +30,15 @@ import com.btb.entity.Market;
 import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.huobi.vo.MarketDepthVo1;
 import com.btb.huobi.vo.MarketVo1;
-import com.btb.huobi.vo.MarketVo2;
+import com.btb.huobi.vo.MarketVo1.MarketVo2;
+import com.btb.huobi.vo.MarketVo1.MarketVo3;
 import com.btb.util.BaseHttp;
 import com.btb.util.CacheData;
 import com.btb.util.DBUtil;
 import com.btb.util.H2Util;
 import com.btb.util.SpringUtil;
 import com.btb.util.StringUtil;
+import com.btb.util.TaskUtil;
 
 public class WebSocketUtils extends WebSocketClient {
 	//{改}
@@ -55,7 +57,7 @@ public class WebSocketUtils extends WebSocketClient {
 		for (Thirdpartysupportmoney thirdpartysupportmoney : jiaoyiduis) {
 			SubModel subModel = new SubModel();
 			//打开后添加实时行情订阅
-			String chId = "market."+thirdpartysupportmoney.getMoneypair()+".detail";
+			String chId = "market."+thirdpartysupportmoney.getMoneypair()+".trade.detail";
 			subModel.setId(chId);
 			subModel.setSub(chId);
 			chatclient.send(JSON.toJSONString(subModel));
@@ -83,16 +85,27 @@ public class WebSocketUtils extends WebSocketClient {
 				if (marketJsonStr.contains("depth.step1")) {//是买盘买盘数据
 					MarketDepthVo1 marketDepthVo1 = JSON.parseObject(marketJsonStr, MarketDepthVo1.class);
 					System.out.println(JSON.toJSONString(marketDepthVo1));
-				}else {//实时行情数据
+				}else if (marketJsonStr.contains("trade.detail")) {
+					//实时行情数据
 					MarketVo1 vo1 = JSON.parseObject(marketJsonStr, MarketVo1.class);
-					MarketVo2 vo2 = vo1.getTick();
-					if (vo1.getCh() != null && vo2 != null && vo2.getClose() != null) {//如果是订阅的行情数据
+					MarketVo3 vo3=null;
+					try {
+						vo3 = vo1.getTick().getData().get(0);
+					} catch (Exception e) {}
+					if (vo3!=null && vo3.getPrice() != null) {//如果是订阅的行情数据
 						Market market = new Market();
-						market.setPlatformid(platformid);//平台id
-						market.setMoneypair(vo1.getCh().split("\\.")[1]);//交易对
+						market.setPlatformid(platformid);//平台id 必填
+						market.setMoneypair(vo1.getCh().split("\\.")[1]);//交易对 必填
 						String[] strings = StringUtil.getHuobiBuyMoneytype(market.getMoneypair());
 						market.setBuymoneytype(strings[0]);
-						market.setClose(vo2.getClose());//最新价格
+						market.setMoneytype(strings[1]);
+						market.setClose(vo3.getPrice());//最新价格 必填
+						if (vo3.getDirection().equals("sell")) {
+							market.setSell(vo3.getPrice());
+						}else {
+							market.setBuy(vo3.getPrice());
+						}
+						System.out.println(JSON.toJSONString(market));
 						//添加或者更新行情数据
 						H2Util.insertOrUpdate(market);
 					}
@@ -131,6 +144,7 @@ public class WebSocketUtils extends WebSocketClient {
 		//System.out.println(chatclient.getReadyState());// 获取链接状态,OPEN是链接状态,CONNECTING: 正在链接状态
 	}
 	public static void main(String[] args) throws Exception {
+		TaskUtil.initBtcEthNowMoney();
 		executeWebSocket();
 	}
 	

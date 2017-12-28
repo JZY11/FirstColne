@@ -62,6 +62,17 @@ public class TaskUtil {
 			CacheData.moneyPairs.put(platformid, findmoneypairByplatformid);
 		}
  	}
+	/**
+	 * 从数据库里面加载最新的比特币数量
+	 */
+	public static void initBtcCountByDb() {
+		BitbinfoMapper bitbinfoMapper = SpringUtil.getBean(BitbinfoMapper.class);
+		List<Bitbinfo> selectAll = bitbinfoMapper.selectAll();
+		for (Bitbinfo bitbInfo : selectAll) {
+			//放到集合里面
+			CacheData.bitbCountMap.put(bitbInfo.getBitbcode(), bitbInfo.getCurrentcount());
+		}
+	}
 	
 	/*
 	 * 获取每一种币的流通数量,5分钟一次
@@ -89,6 +100,8 @@ public class TaskUtil {
 			try {
 				int updateByPrimaryKeySelective = bitbinfoMapper.updateByPrimaryKeySelective(bitbInfo);
 				if (updateByPrimaryKeySelective==0) {
+					//放到集合里面
+					CacheData.bitbCountMap.put(bitbInfo.getBitbcode(), bitbInfo.getCurrentcount());
 					bitbinfoMapper.insertSelective(bitbInfo);
 				}
 			} catch (Exception e) {

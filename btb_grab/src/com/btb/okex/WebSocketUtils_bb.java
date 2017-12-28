@@ -31,12 +31,12 @@ import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.okex.vo.MarketDepthVo1;
 import com.btb.okex.vo.MarketDepthVo2;
 import com.btb.okex.vo.MarketVo1;
-import com.btb.okex.vo.MarketVo2;
 import com.btb.util.BaseHttp;
 import com.btb.util.CacheData;
 import com.btb.util.DBUtil;
 import com.btb.util.H2Util;
 import com.btb.util.SpringUtil;
+import com.btb.util.TaskUtil;
 
 public class WebSocketUtils_bb extends WebSocketClient {
 	//{改}
@@ -55,7 +55,7 @@ public class WebSocketUtils_bb extends WebSocketClient {
 		for (Thirdpartysupportmoney thirdpartysupportmoney : jiaoyiduis) {
 			SubModel subModel = new SubModel();
 			//打开后添加实时行情订阅
-			String chId = "ok_sub_spot_"+thirdpartysupportmoney.getMoneypair()+"_ticker";
+			String chId = "ok_sub_spot_"+thirdpartysupportmoney.getMoneypair()+"_deals";
 			subModel.setChannel(chId);
 			chatclient.send(JSON.toJSONString(subModel));
 			
@@ -76,20 +76,30 @@ public class WebSocketUtils_bb extends WebSocketClient {
 	//{改}
 	@Override
 	public void onMessage(String message) {
-		if (message.contains("_ticker")) {//行情数据
-			MarketVo1 marketVo1 = JSON.parseArray(message, MarketVo1.class).get(0);
-			MarketVo2 marketVo2 = marketVo1.getData();
-			Market market = new Market();
-			market.setAmount(marketVo2.getVol());
-			market.setClose(marketVo2.getClose());
-			market.setHigh(marketVo2.getHigh());
-			market.setLow(marketVo2.getLow());
-			market.setMoneypair(marketVo1.getChannel().replace("ok_sub_spot_", "").replace("_ticker", ""));
-			market.setOpen(marketVo2.getOpen());
-			market.setPlatformid(platformid);
-			//添加或者更新行情数据
-			System.out.println(JSON.toJSONString(market));
-			H2Util.insertOrUpdate(market);
+		if (message.contains("_deals")) {//行情数据
+			System.out.println(message);
+			MarketVo1 marketVo1 = null;
+			try {
+				marketVo1 = JSON.parseArray(message, MarketVo1.class).get(0);
+				List<Object[]> data = marketVo1.getData();
+				Market market = new Market();
+				market.setMoneypair(marketVo1.getChannel().replace("ok_sub_spot_", "").replace("_deals", ""));
+				String[] split = market.getMoneypair().split("_");
+				market.setMoneytype(split[0]);
+				market.setBuymoneytype(split[1]);
+				market.setPlatformid(platformid);
+				for (Object[] order : data) {
+					market.setClose(new BigDecimal(order[1].toString()));
+					if (order[4].equals("ask")) {
+						market.setSell(new BigDecimal(order[1].toString()));
+					}else {
+						market.setBuy(new BigDecimal(order[1].toString()));
+					}
+				}
+				//添加或者更新行情数据
+				System.out.println(JSON.toJSONString(market));
+				H2Util.insertOrUpdate(market);
+			} catch (Exception e) {}
 		}else if (message.contains("_depth_10")) {
 			MarketDepthVo1 marketDepthVo1 = JSON.parseArray(message, MarketDepthVo1.class).get(0);
 			MarketDepthVo2 marketDepthVo2 = marketDepthVo1.getData();
@@ -121,6 +131,7 @@ public class WebSocketUtils_bb extends WebSocketClient {
 		//System.out.println(chatclient.getReadyState());// 获取链接状态,OPEN是链接状态,CONNECTING: 正在链接状态
 	}
 	public static void main(String[] args) throws Exception {
+		TaskUtil.initBtcEthNowMoney();
 		executeWebSocket();
 	}
 	

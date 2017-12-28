@@ -24,19 +24,23 @@ public class Market {
 		this.platformid=platformid;
 	}
 	String id;//自动计算  平台id.交易对
-	
-	String platformid;//平台id
+	//必填
+	String platformid;//平台id  
 	String platformName;//平台名称
 	String platformIcon;//平台图标url
 	String platformUrl;//平台url
 	String moneypair;//交易对比如btcuatf
-	String moneytype;//币种btcusdt,就是btc
+	//必填
+	String moneytype;//币种btcusdt,就是btc 
 	String moneytypeName;//币种btcusdt,就是btc的名字比特币
 	String moneytypeIcon;//币种图标
 	String moneytypeUrl;//币种url描述
-	String buymoneytype;//可以使用的币种btcusdt,就是usdt
+	//必填
+	String buymoneytype;//可以使用的币种btcusdt,就是usdt,
+	BigDecimal allMoneyCount;//流通量
 	
-	BigDecimal open=CacheData.todayOpen.get(getId());//当日凌晨0点开盘价格,定时凌晨0点在k线图取出最新开盘价格
+	
+	BigDecimal open;//当日凌晨0点开盘价格,定时凌晨0点在k线图取出最新开盘价格
 	BigDecimal close;//最新成交价	//行情数据实时
 	BigDecimal low;//今日最低价		//k线图计算,1.5分钟
 	BigDecimal high;//今日最高价		//k线图计算,1.5分钟
@@ -46,10 +50,10 @@ public class Market {
 	BigDecimal buy;//买一价格   		//深度定时更改,实时
 	BigDecimal sell;//卖一价格  		//深度定时更改,实时
 	
-	BigDecimal allMoneyCount;//流通量
-	BigDecimal allMoneyrmb;//流通市值 	//币数量乘以最新价格 
 	
 	
+	
+	BigDecimal allMoneyrmb;//流通市值 	//币数量乘以最新价格 ,不用设置
 	BigDecimal buyrmb;//买一价格,人民币
 	BigDecimal sellrmb;//卖以价格,人民币
 	BigDecimal volrmb;//24小时成交额,人民币, 自动生成
@@ -62,10 +66,8 @@ public class Market {
 	
 	
 	public BigDecimal getAllMoneyCount() {
+		allMoneyCount=CacheData.bitbCountMap.get(moneytype);
 		return allMoneyCount;
-	}
-	public void setAllMoneyCount(BigDecimal allMoneyCount) {
-		this.allMoneyCount = allMoneyCount;
 	}
 	public String getId() {
 		id=getPlatformid()+"."+getMoneypair();
@@ -120,10 +122,8 @@ public class Market {
 		this.moneypair = moneypair;
 	}
 	public BigDecimal getOpen() {
+		open=CacheData.todayOpen.get(getId());
 		return open;
-	}
-	public void setOpen(BigDecimal open) {
-		this.open = open;
 	}
 	public BigDecimal getOpenrmb() {
 		openrmb=StringUtil.ToRmb(open, platformid, buymoneytype);

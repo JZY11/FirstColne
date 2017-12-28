@@ -28,11 +28,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.Market;
 import com.btb.entity.Thirdpartysupportmoney;
-import com.btb.huobi.vo.MarketDepthVo1;
-import com.btb.huobi.vo.MarketVo1;
-import com.btb.huobi.vo.MarketVo2;
 import com.btb.okex.vo.MarketContractVo1;
-import com.btb.okex.vo.MarketContractVo2;
 import com.btb.okex.vo.MarketDepthVo2;
 import com.btb.util.BaseHttp;
 import com.btb.util.CacheData;
@@ -59,7 +55,7 @@ public class WebSocketUtils_contract extends WebSocketClient {
 			String moneyType = thirdpartysupportmoney.getMoneypair().split("_")[0];
 			SubModel subModel = new SubModel();
 			//本周合约行情订阅
-			String chId = "ok_sub_futureusd_"+moneyType+"_ticker_this_week";
+			String chId = "ok_sub_futureusd_"+moneyType+"_trade_this_week";
 			subModel.setChannel(chId);
 			chatclient.send(JSON.toJSONString(subModel));
 			//本周合约深度订阅
@@ -68,7 +64,7 @@ public class WebSocketUtils_contract extends WebSocketClient {
 			//chatclient.send(JSON.toJSONString(subModel));
 			
 			//下周合约行情订阅
-			chId = "ok_sub_futureusd_"+moneyType+"_ticker_next_week";
+			chId = "ok_sub_futureusd_"+moneyType+"_trade_next_week";
 			subModel.setChannel(chId);
 			//chatclient.send(JSON.toJSONString(subModel));
 			//下周合约深度订阅
@@ -77,7 +73,7 @@ public class WebSocketUtils_contract extends WebSocketClient {
 			//chatclient.send(JSON.toJSONString(subModel));
 			
 			//本季度合约行情订阅
-			chId = "ok_sub_futureusd_"+moneyType+"_ticker_quarter";
+			chId = "ok_sub_futureusd_"+moneyType+"_trade_quarter";
 			subModel.setChannel(chId);
 			//chatclient.send(JSON.toJSONString(subModel));
 			//本季度合约深度订阅
@@ -101,29 +97,41 @@ public class WebSocketUtils_contract extends WebSocketClient {
 		String pid=null;
 		String startStr=null;
 		String endStr=null;
-		if (message.contains("_ticker_")) {//行情
-			if (message.contains("_ticker_this_week")) {//本周行情
+		if (message.contains("_trade_")) {//行情
+			if (message.contains("_trade_this_week")) {//本周行情
 				pid=platformid_this_week;
-				endStr="_ticker_this_week";
-			}else if (message.contains("_ticker_next_week")) {//下周行情
+				endStr="_trade_this_week";
+			}else if (message.contains("_trade_next_week")) {//下周行情
 				pid=platformid_next_week;
-				endStr="_ticker_next_week";
-			}else if (message.contains("_ticker_quarter")) {//本季度行情
+				endStr="_trade_next_week";
+			}else if (message.contains("_trade_quarter")) {//本季度行情
 				pid=platformid_okex_quarter;
-				endStr="_ticker_quarter";
+				endStr="_trade_quarter";
 			}
 			if (pid != null) {
 				startStr="ok_sub_futureusd_";
-				MarketContractVo1 marketContractVo1 = JSON.parseArray(message, MarketContractVo1.class).get(0);
-				MarketContractVo2 marketContractVo2 = marketContractVo1.getData();
-				
-				Market market = new Market();
-				market.setAmount(marketContractVo2.getVol());
-				market.setClose(marketContractVo2.getLast());
-				market.setHigh(marketContractVo2.getHigh());
-				market.setLow(marketContractVo2.getLow());
-				market.setMoneypair(marketContractVo1.getChannel().replace(startStr, "").replace(endStr, "")+"_usd");
-				
+				MarketContractVo1 marketContractVo1 = null;
+				try {
+					marketContractVo1 = JSON.parseArray(message, MarketContractVo1.class).get(0);
+					List<Object[]> data = marketContractVo1.getData();
+					Market market = new Market();
+					market.setMoneypair(marketContractVo1.getChannel().replace(startStr, "").replace(endStr, "")+"_usd");
+					String[] split = market.getMoneypair().split("_");
+					market.setMoneytype(split[0]);
+					market.setBuymoneytype(split[1]);
+					market.setPlatformid(pid);
+					for (Object[] order : data) {
+						market.setClose(new BigDecimal(order[1].toString()));
+						if (order[4].equals("ask")) {
+							market.setSell(new BigDecimal(order[1].toString()));
+						}else {
+							market.setBuy(new BigDecimal(order[1].toString()));
+						}
+					}
+					//添加或者更新行情数据
+					System.out.println(JSON.toJSONString(market));
+					H2Util.insertOrUpdate(market);
+				} catch (Exception e) {}
 			}
 		}else if (message.contains("_depth_")) {//深度
 			if (message.contains("_depth_this_week_10")) {//本周深度

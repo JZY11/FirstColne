@@ -35,6 +35,9 @@ public class H2Util {
     	dataSource.setMaxActive(1000);//最大并发链接数
     	dataSource.setDefaultAutoCommit(true);
     	dataSource.setValidationQuery("SELECT 'x'");
+    	
+    	//h2创建表
+    	H2Util.initTable();
     }  
 	private static Connection getconn() {
 		try {
@@ -214,7 +217,7 @@ public class H2Util {
 			sql=sql.substring(0, sql.length()-1);
 		}
 		sql+= " where id=?";
-		System.out.println(sql);
+		//System.out.println(sql);
 		parms.add(market.getId());
 		try {
 			PreparedStatement prepareStatement = connection.prepareStatement(sql);
@@ -265,7 +268,6 @@ public class H2Util {
 		market.setPlatformid("test");
 		market.setMoneypair("btcUsdt");
 		market.setClose(new BigDecimal(10));
-		market.setOpen(new BigDecimal(11));
 		insertOrUpdate(market);
 		
 		System.out.println(select("select * from market"));;

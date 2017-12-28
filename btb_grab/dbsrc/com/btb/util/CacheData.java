@@ -29,8 +29,8 @@ public class CacheData  {
 	public static Map<String, WebSocketClient> webSocketClientMap = new HashMap<>();
 	//每个交易对,今日开盘价格Map<平台id.交易对,最新价格>
 	public static Map<String, BigDecimal> todayOpen = new HashMap<>();
-	//每一种币的流通,每小时执行一次
-	public static Map<String, Bitbinfo> bitbInfoMap = new HashMap<>();
+	//获取比特币流通量,每隔一小时采集
+	public static Map<String, BigDecimal> bitbCountMap = new HashMap<>();
 	//获取每个平台的btc,eth实时价格,用于转换成人民币
 	//Map<交易平台id.btc/eth>
 	public static Map<String, BigDecimal> nowBtcEthRmb=new HashMap<>();
