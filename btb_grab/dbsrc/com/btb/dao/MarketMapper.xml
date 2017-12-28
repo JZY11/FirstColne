@@ -16,5 +16,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	left join bitbinfo c on b.moneytype=c.bitbcode
 	</select>
 	
+	<!-- 更改实时行情,定时更改h2内存数据里面的实时行情 -->
+	<select id="findMarketByThisDayTask" resultType="com.btb.entity.Market">
+		select platformid,moneypair,moneytype,buymoneytype,MIN(low) as low,MAX(high) as high,SUM(vol) as vol,SUM(amount) as amount from markethistory 
+		where time_day=CURDATE()
+		GROUP BY platformid,moneypair
+	</select>
 	
 </mapper>

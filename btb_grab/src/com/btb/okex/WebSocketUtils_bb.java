@@ -77,7 +77,6 @@ public class WebSocketUtils_bb extends WebSocketClient {
 	@Override
 	public void onMessage(String message) {
 		if (message.contains("_deals")) {//行情数据
-			System.out.println(message);
 			MarketVo1 marketVo1 = null;
 			try {
 				marketVo1 = JSON.parseArray(message, MarketVo1.class).get(0);
@@ -97,7 +96,6 @@ public class WebSocketUtils_bb extends WebSocketClient {
 					}
 				}
 				//添加或者更新行情数据
-				System.out.println(JSON.toJSONString(market));
 				H2Util.insertOrUpdate(market);
 			} catch (Exception e) {}
 		}else if (message.contains("_depth_10")) {
@@ -131,7 +129,7 @@ public class WebSocketUtils_bb extends WebSocketClient {
 		//System.out.println(chatclient.getReadyState());// 获取链接状态,OPEN是链接状态,CONNECTING: 正在链接状态
 	}
 	public static void main(String[] args) throws Exception {
-		TaskUtil.initBtcEthNowMoney();
+		TaskUtil.initStartAll();
 		executeWebSocket();
 	}
 	

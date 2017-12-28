@@ -4,12 +4,15 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Calendar;
+import java.util.Date;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.persistence.Id;
 
+import com.btb.util.DateUtil;
 import com.btb.util.StringUtil;
 
 public class Markethistory {
@@ -29,6 +32,13 @@ public class Markethistory {
 	Long timeid;//timelongid
 	String moneytype;
 	String buymoneytype;
+	String time_min;
+	String time_hour;
+	String time_week;
+	String time_month;
+	String time_day;
+	
+	
 	BigDecimal open;//1分钟时前价格
 	BigDecimal openrmb;//1分钟前价格人民币, 自动生成
 	BigDecimal close;//最新成交价
@@ -140,4 +150,28 @@ public class Markethistory {
 		volrmb=StringUtil.ToRmb(vol, platformid, buymoneytype);
 		return volrmb;
 	}
+	public String getTime_min() {
+		time_min = DateUtil.dateFormat(new Date(timeid*1000), "yyyy-MM-dd HH:mm:ss");
+		return time_min;
+	}
+	public String getTime_hour() {
+		time_hour = DateUtil.dateFormat(new Date(timeid*1000), "yyyy-MM-dd-HH");
+		return time_hour;
+	}
+	public String getTime_week() {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(new Date(timeid*1000));
+		time_week=calendar.getWeekYear() +"-"+ calendar.getWeeksInWeekYear()+"week";
+		return time_week;
+	}
+	public String getTime_month() {
+		time_month = DateUtil.dateFormat(new Date(timeid*1000), "yyyy-MM");
+		return time_month;
+	}
+	public String getTime_day() {
+		time_day = DateUtil.dateFormat(new Date(timeid*1000), "yyyy-MM-dd");
+		return time_day;
+	}
+	
+	
 }

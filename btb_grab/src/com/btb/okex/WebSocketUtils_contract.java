@@ -93,7 +93,6 @@ public class WebSocketUtils_contract extends WebSocketClient {
 	//{改}
 	@Override
 	public void onMessage(String message) {
-		System.out.println("接收--received: " + message);
 		String pid=null;
 		String startStr=null;
 		String endStr=null;
@@ -129,7 +128,6 @@ public class WebSocketUtils_contract extends WebSocketClient {
 						}
 					}
 					//添加或者更新行情数据
-					System.out.println(JSON.toJSONString(market));
 					H2Util.insertOrUpdate(market);
 				} catch (Exception e) {}
 			}

@@ -1,26 +1,21 @@
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.java_websocket.client.WebSocketClient;
 import org.quartz.SchedulerException;
 
-import com.btb.dao.ThirdpartyplatforminfoMpper;
-import com.btb.dao.ThirdpartysupportmoneyMapper;
-import com.btb.entity.Thirdpartyplatforminfo;
-import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.tasks.BtbConutJob;
 import com.btb.tasks.BuyParmeterJob;
 import com.btb.tasks.CheckWebSocketStatusJob;
+import com.btb.tasks.InitBtcEthNowMoney;
+import com.btb.tasks.InitMarketAllToH2DBJob;
+import com.btb.tasks.InitTodayNewDataJob;
+import com.btb.tasks.InitTodayOpenJob;
 import com.btb.tasks.MarketHistoryKlineJob;
 import com.btb.tasks.RateJob;
 import com.btb.tasks.service.JobManager;
-import com.btb.util.BaseHttp;
 import com.btb.util.CacheData;
-import com.btb.util.H2Util;
-import com.btb.util.SpringUtil;
 import com.btb.util.StringUtil;
 import com.btb.util.TaskUtil;
 
@@ -29,80 +24,40 @@ public class Main {
 		
 		TaskUtil.initStartAll();
 		
-		//银行利率每天执行一次,1个任务
-		//addJobRate();
-		
-		//--采集每个平台支持的交易对, 多少平台多少线程,大概200多个线程
-		//addMoneyDuiJobs();
-		
-		//采集k线图分钟数据,每1.5分钟执行一次, 每个平台一个线程,大概200个线程
-		//获取平台所有交易对
-		//addKlineJobs();
-		
-		//采集比特币流通数量,暂时先关闭,接口采集来源需要优化
-		//addMoneyCountJob();
 		
 		//每隔30秒检查一次所有websoket的链接状态,如果断链,重新链接
-		//addCheckWebSocketStatusJob();
+		JobManager.addJob(new CheckWebSocketStatusJob());
 		
 		//所有平台的行情数据采集,,由于需要实时性,所以只能使用websoket
 		//获取所有平台的websoket类
-		//enableWebSocket();
-	}
-	
-	
-	
-	//银行利率每天执行一次,1个任务
-	public static void addJobRate() {
-		try {
-			JobManager.addJob(new RateJob());
-		} catch (SchedulerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	//--采集每个平台支持的交易对, 多少平台多少线程,大概200多个线程
-	public static void addMoneyDuiJobs() {
-		try {
-			BuyParmeterJob buyParmeterJob = new BuyParmeterJob();
-			JobManager.addJob(buyParmeterJob);
-		} catch (SchedulerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	//采集k线图分钟数据,每1.5分钟执行一次, 每个平台一个线程,大概200个线程
-	//加载每个平台的btc,eth价格, 每1.5分钟执行一次,这个是执行一次,任务放在k线图里面
-	public static void addKlineJobs() {
-		try {
-			MarketHistoryKlineJob marketHistoryKlineJob = new MarketHistoryKlineJob();
-			JobManager.addJob(marketHistoryKlineJob);
-		} catch (SchedulerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	//获取比特币数量
-	public static void addMoneyCountJob() {
-		try {
-			JobManager.addJob(new BtbConutJob());
-		} catch (SchedulerException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-	}
-	
-	//检查websocket任务的状态,关闭的重连
-	public static void addCheckWebSocketStatusJob() {
-		try {
-			JobManager.addJob(new CheckWebSocketStatusJob());
-		} catch (SchedulerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		enableWebSocket();
+		
+		//获取每个平台,每个交易对的 今日开盘价格, 从k线图里面获取,每1.5分钟跑一次
+		JobManager.addJob(new InitTodayOpenJob());
+		
+		//启动加载每个平台的btc,eth价格, 每1.5分钟执行一次
+		JobManager.addJob(new InitBtcEthNowMoney());
+		
+		//加载今日实时行情数据,每1.5钟跑一次,更改h2内存数据,最高价,最低价,交易量,交易额
+		JobManager.addJob(new InitTodayNewDataJob());
+		
+		//--采集每个平台支持的交易对, 多少平台多少线程,大概200多个线程
+		JobManager.addJob(new BuyParmeterJob());
+		
+		//采集k线图分钟数据,每1.5分钟执行一次, 每个平台一个线程,大概200个线程
+		//获取平台所有交易对
+		JobManager.addJob(new MarketHistoryKlineJob());
+		
+		//银行利率每天执行一次,1个任务
+		JobManager.addJob(new RateJob());
+		
+		//采集比特币流通数量,暂时先关闭,接口采集来源需要优化
+		JobManager.addJob(new BtbConutJob());
+		
+		//初始化所有实时行情信息,到h2数据库中
+		JobManager.addJob(new InitMarketAllToH2DBJob());
+		
+		
 	}
 	
 	//开启websocket服务

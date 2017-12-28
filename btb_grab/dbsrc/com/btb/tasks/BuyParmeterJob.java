@@ -67,14 +67,9 @@ public class BuyParmeterJob extends BaseJob {
 	
 	public static void main(String[] args) {
 		//--采集每个平台支持的交易对, 多少平台多少任务,大概200多个任务
-		try {
 			SpringUtil.testinitSpring();
 			BuyParmeterJob buyParmeterJob = new BuyParmeterJob();
 			JobManager.addJob(buyParmeterJob);
-		} catch (SchedulerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
 }

@@ -29,8 +29,14 @@ public class JobManager {
 	 * 参数
 	 * @throws SchedulerException 
 	 */
-	public static void addJob(BaseJob baseJob) throws SchedulerException {
-		Scheduler scheduler = jobFactory.getScheduler();
+	public static void addJob(BaseJob baseJob) {
+		Scheduler scheduler = null;
+		try {
+			scheduler = jobFactory.getScheduler();
+		} catch (SchedulerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		JobDetail job = newJob(baseJob.getC()).withIdentity(baseJob.getJobId()).build();
 		JobDataMap jobDataMap = job.getJobDataMap();
 		jobDataMap.putAll(baseJob.getParam()==null?new HashMap<String,Object>():baseJob.getParam());
@@ -44,8 +50,13 @@ public class JobManager {
           .repeatForever()) //一直执行，奔腾到老不停歇
 	      .build();
 		// Tell quartz to schedule the job using our trigger
-		scheduler.scheduleJob(job, trigger);
-		scheduler.start();
+		try {
+			scheduler.scheduleJob(job, trigger);
+			scheduler.start();
+		} catch (SchedulerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public static void main(String[] args) throws SchedulerException {

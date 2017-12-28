@@ -84,7 +84,6 @@ public class WebSocketUtils extends WebSocketClient {
 			} else {
 				if (marketJsonStr.contains("depth.step1")) {//是买盘买盘数据
 					MarketDepthVo1 marketDepthVo1 = JSON.parseObject(marketJsonStr, MarketDepthVo1.class);
-					System.out.println(JSON.toJSONString(marketDepthVo1));
 				}else if (marketJsonStr.contains("trade.detail")) {
 					//实时行情数据
 					MarketVo1 vo1 = JSON.parseObject(marketJsonStr, MarketVo1.class);
@@ -105,7 +104,6 @@ public class WebSocketUtils extends WebSocketClient {
 						}else {
 							market.setBuy(vo3.getPrice());
 						}
-						System.out.println(JSON.toJSONString(market));
 						//添加或者更新行情数据
 						H2Util.insertOrUpdate(market);
 					}
@@ -119,7 +117,6 @@ public class WebSocketUtils extends WebSocketClient {
 	//{改}
 	@Override
 	public void onMessage(String message) {
-		System.out.println("接收--received: " + message);
 	}
 	
 	@Override

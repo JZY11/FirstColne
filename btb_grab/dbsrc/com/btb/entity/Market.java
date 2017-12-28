@@ -48,8 +48,8 @@ public class Market {
 	BigDecimal low;//今日最低价		//k线图计算,1.5分钟
 	BigDecimal high;//今日最高价		//k线图计算,1.5分钟
 	BigDecimal vol;//今日成交额		//k线图计算,1.5分钟
-	BigDecimal count;//今日成笔数     //k线图计算,1.5分钟
 	BigDecimal amount;//今日成交量  //k线图计算,1.5分钟
+	BigDecimal count;//今日成笔数     //k线图计算,1.5分钟,这个必须要
 	
 	
 	

@@ -44,19 +44,32 @@ public class TaskUtil {
 		TaskUtil.initMoneypairToDB();//从数据库里面加载防止采集交易对不成功
 		//同步到数据里面获取外汇利率
 		TaskUtil.initWaiHuiToDB();
-		//btc和ehc
+		//btc和ehc,用于采集btc和ehc的最新价格,不需要定时任务,这是从数据库采集
 		TaskUtil.initBaseBtcAndEthKline();
-		//启动加载每个平台的btc,eth价格, 每1.5分钟执行一次,这个是执行一次,任务放在k线图里面
+		//启动加载每个平台的btc,eth价格, 每1.5分钟执行一次,从数据库采集
 		TaskUtil.initBtcEthNowMoney();
 		//同步加载k线图数据
 		TaskUtil.initKline(false);
-		//获取每个平台,每个交易对的 今日开盘价格, 从k线图里面获取
+		//获取每个平台,每个交易对的 今日开盘价格, 从k线图里面获取,每1.5分钟跑一次
 		TaskUtil.initTodayOpen();
 		//初始化所有实时行情信息,到h2数据库中
 		TaskUtil.initMarketAllToH2DB();
-		//从数据库里面加载最新的比特币数量
+		//加载今日实时行情数据,每1.5钟跑一次,更改h2内存数据,最高价,最低价,交易量,交易额
+		TaskUtil.initTodayNewData();
+		//从数据库里面加载最新的比特币数量,这个不需要做成任务
 		TaskUtil.initBtcCountByDb();
 	}
+	
+	//加载实时行情数据,每分钟跑一次,更改h2内存数据
+	public static void initTodayNewData() {
+		MarketMapper marketMapper = SpringUtil.getBean(MarketMapper.class);
+		List<Market> markets = marketMapper.findMarketByThisDayTask();
+		for (Market market : markets) {
+			H2Util.insertOrUpdate(market);
+		}
+	}
+	
+	
 	/**
 	 * 初始化CacheData.moneyPairs,所有平台的交易对
 	 */
@@ -165,7 +178,6 @@ public class TaskUtil {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		CacheData.rateMap=map;//缓存数据,用于计算
 		//持久化到数据库
 		RateMapper rateMapper = SpringUtil.getBean(RateMapper.class);
 		
@@ -176,7 +188,7 @@ public class TaskUtil {
 			rate.setUpdatetime(DateUtil.dateFormat(new Date(), "yyyy-MM-dd HH:mm:ss"));
 			rateMapper.updateByPrimaryKeySelective(rate);
 		}
-		
+		initWaiHuiToDB();
 	}
 	//加载k线图数据
 	public static void initKline(Boolean isTask) {
