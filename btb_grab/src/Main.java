@@ -26,24 +26,8 @@ import com.btb.util.TaskUtil;
 
 public class Main {
 	public static void main(String[] args) {
-		//初始化所有的HttpUtil,方便采集k线图和交易对
-		InitAllHttpUtils();
-		//采集所有平台中的交易对,同步
-		TaskUtil.initMoneypairToDB();//从数据库里面加载防止采集交易对不成功
-		//同步到数据里面获取外汇利率
-		TaskUtil.initWaiHuiToDB();
-		//btc和ehc
-		TaskUtil.initBaseBtcAndEthKline();
-		//启动加载每个平台的btc,eth价格, 每1.5分钟执行一次,这个是执行一次,任务放在k线图里面
-		TaskUtil.initBtcEthNowMoney();
-		//同步加载k线图数据
-		TaskUtil.initKline(false);
-		//获取每个平台,每个交易对的 今日开盘价格, 从k线图里面获取
-		TaskUtil.initTodayOpen();
-		//初始化所有实时行情信息,到h2数据库中
-		TaskUtil.initMarketAllToH2DB();
-		//从数据库里面加载最新的比特币数量
-		TaskUtil.initBtcCountByDb();
+		
+		TaskUtil.initStartAll();
 		
 		//银行利率每天执行一次,1个任务
 		//addJobRate();
@@ -66,13 +50,8 @@ public class Main {
 		//enableWebSocket();
 	}
 	
-	//初始化所有的HttpUtil,启动执行一次
-	public static void InitAllHttpUtils() {
-		Map<String, BaseHttp> beanHttpMap = SpringUtil.context.getBeansOfType(BaseHttp.class);
-		for (BaseHttp baseHttp : beanHttpMap.values()) {
-			CacheData.httpBeans.put(baseHttp.getPlatformId(), baseHttp);
-		}
-	}
+	
+	
 	//银行利率每天执行一次,1个任务
 	public static void addJobRate() {
 		try {

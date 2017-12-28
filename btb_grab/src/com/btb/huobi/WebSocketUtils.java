@@ -144,7 +144,7 @@ public class WebSocketUtils extends WebSocketClient {
 		//System.out.println(chatclient.getReadyState());// 获取链接状态,OPEN是链接状态,CONNECTING: 正在链接状态
 	}
 	public static void main(String[] args) throws Exception {
-		TaskUtil.initBtcEthNowMoney();
+		TaskUtil.initStartAll();
 		executeWebSocket();
 	}
 	
