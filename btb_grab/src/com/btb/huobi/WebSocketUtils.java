@@ -27,6 +27,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.Market;
+import com.btb.entity.MarketDepthVo;
 import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.huobi.vo.MarketDepthVo1;
 import com.btb.huobi.vo.MarketVo1;
@@ -84,6 +85,8 @@ public class WebSocketUtils extends WebSocketClient {
 			} else {
 				if (marketJsonStr.contains("depth.step1")) {//是买盘买盘数据
 					MarketDepthVo1 marketDepthVo1 = JSON.parseObject(marketJsonStr, MarketDepthVo1.class);
+					MarketDepthVo marketDepthVo = marketDepthVo1.getTick();
+					CacheData.sellBuyDisk.put(platformid+"."+marketDepthVo1.getCh().split("\\.")[1], marketDepthVo);
 				}else if (marketJsonStr.contains("trade.detail")) {
 					//实时行情数据
 					MarketVo1 vo1 = JSON.parseObject(marketJsonStr, MarketVo1.class);
