@@ -15,6 +15,7 @@ import org.java_websocket.client.WebSocketClient;
 import com.btb.dao.MarketHistoryMapper;
 import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.Bitbinfo;
+import com.btb.entity.Market;
 import com.btb.entity.MarketDepthVo;
 import com.btb.entity.Markethistory;
 import com.btb.entity.Thirdpartysupportmoney;
@@ -37,6 +38,8 @@ public class CacheData  {
 	public static Map<String, BigDecimal> nowBtcEthRmb=new HashMap<>();
 	//买卖盘Map<交易平台id.交易对,买卖盘>
 	public static Map<String, MarketDepthVo> sellBuyDisk = new HashMap<>();
+	//全网数据,定时1分钟执行一次
+	public static Map<String, Map<String, Object>> bxsMarket = new HashMap<>();
 	
 	static{
 		rateMap.put("USD", new BigDecimal("0.1513200000"));

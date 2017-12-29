@@ -58,6 +58,23 @@ public class TaskUtil {
 		TaskUtil.initTodayNewData();
 		//从数据库里面加载最新的比特币数量,这个不需要做成任务
 		TaskUtil.initBtcCountByDb();
+		//定时计算全网平均数据,每分钟计算一次,并推送到服务器端
+		TaskUtil.initBxsMarket();
+	}
+	
+	//定时计算全网平均数据,每分钟计算一次,并推送到服务器端
+	public static void initBxsMarket() {
+		String sql = "select 'bxs_all' as platformid,moneytype,moneytypeName,";
+		sql+="avg(openrmb) as openrmb,avg(closermb) as closermb,";
+		sql+="avg(buyrmb) as buyrmb,avg(sellrmb) as sellrmb,max(allMoneyrmb) as allMoneyrmb,";
+		sql+="min(lowrmb) as lowrmb,max(highrmb) as highrmb,";
+		sql+="sum(volrmb) as volrmb,sum(amount) as amount,";
+		sql+="avg(zhangfuMoneyrmb) as zhangfuMoneyrmb,avg(zhangfu) as zhangfu";
+		sql+="FROM markethistory group by moneytype,moneytypeName";
+		List<Map<String, Object>> list = H2Util.select(sql);
+		for (Map<String, Object> map : list) {
+			CacheData.bxsMarket.put(map.get("moneytype").toString(), map);
+		}
 	}
 	
 	//加载实时行情数据,每分钟跑一次,更改h2内存数据
@@ -118,7 +135,6 @@ public class TaskUtil {
 	/*
 	 * 获取每一种币的流通数量,5分钟一次
 	 */
-	private static boolean isrunningInitBtcCount = false;
 	public static void initBtcCount() {
 		BitbinfoMapper bitbinfoMapper = SpringUtil.getBean(BitbinfoMapper.class);
 		bitbinfoMapper.deleteByExample(null);
@@ -132,7 +148,6 @@ public class TaskUtil {
 			Elements elements2 = element.select("td.circulating-supply > a");
 			if (elements2 != null && elements2.size()>0) {
 				String currentCount = elements2.get(0).attr("data-supply").trim();
-				System.out.println("=============="+currentCount);
 				bitbInfo.setCurrentcount(new BigDecimal(currentCount.equals("None") || currentCount.equals("")?"0":currentCount));
 			}else {
 				bitbInfo.setCurrentcount(new BigDecimal(0));
@@ -279,7 +294,7 @@ public class TaskUtil {
 	}
 	
 	public static void main(String[] args) {
-		initBaseBtcAndEthKline();
+		initBtcCount();
 	}
 	
 	/*Connection connect = Jsoup.connect("http://www.webmasterhome.cn/huilv/huobidaima.asp");

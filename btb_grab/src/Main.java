@@ -9,6 +9,7 @@ import com.btb.tasks.BtbConutJob;
 import com.btb.tasks.BuyParmeterJob;
 import com.btb.tasks.CheckWebSocketStatusJob;
 import com.btb.tasks.InitBtcEthNowMoney;
+import com.btb.tasks.InitInitBxsMarketJob;
 import com.btb.tasks.InitMarketAllToH2DBJob;
 import com.btb.tasks.InitTodayNewDataJob;
 import com.btb.tasks.InitTodayOpenJob;
@@ -57,7 +58,8 @@ public class Main {
 		//初始化所有实时行情信息,到h2数据库中
 		JobManager.addJob(new InitMarketAllToH2DBJob());
 		
-		
+		//定时计算全网平均数据,每分钟计算一次,并推送到服务器端
+		JobManager.addJob(new InitInitBxsMarketJob());
 	}
 	
 	//开启websocket服务

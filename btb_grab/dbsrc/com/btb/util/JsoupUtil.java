@@ -27,8 +27,6 @@ public class JsoupUtil {
 		}finally {
 			if (text==null) {
 				System.out.println("链接出错: "+url);
-			}else {
-				System.out.println("采集成功: "+url);
 			}
 		}
 		return null;
