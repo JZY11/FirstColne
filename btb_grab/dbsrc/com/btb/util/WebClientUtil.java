@@ -22,7 +22,6 @@ public class WebClientUtil {
 			page = webClient.getPage(url);
 		} catch (FailingHttpStatusCodeException | IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		return page.asXml();
 	}

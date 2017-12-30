@@ -39,27 +39,39 @@ public class TaskUtil {
 	
 	public static void initStartAll() {
 		//初始化所有的HttpUtil,方便采集k线图和交易对
+		System.out.println("正在初始化HttpUtils");
 		InitAllHttpUtils();
-		//采集所有平台中的交易对,同步
-		TaskUtil.initMoneypairToDB();//从数据库里面加载防止采集交易对不成功
+		//采集所有平台中的交易对,同步//从数据库里面加载防止采集交易对不成功
+		System.out.println("正在从数据库加载交易对");
+		TaskUtil.initMoneypairToDB();
 		//同步到数据里面获取外汇利率
+		System.out.println("正在从数据库加载外汇汇率");
 		TaskUtil.initWaiHuiToDB();
-		//btc和ehc,用于采集btc和ehc的最新价格,不需要定时任务,这是从数据库采集
+		//btc和ehc,用于采集btc和ehc的最新价格,需要最新价格计算人民币
+		System.out.println("采集btc和ehc的最新价格,需要最新价格计算人民币");
 		TaskUtil.initBaseBtcAndEthKline();
 		//启动加载每个平台的btc,eth价格, 每1.5分钟执行一次,从数据库采集
+		System.out.println("从数据库抓取btc和ehc的最新价格,上一步是先下载到数据库");
 		TaskUtil.initBtcEthNowMoney();
 		//同步加载k线图数据
+		System.out.println("加载其他价格的k线图数据");
 		TaskUtil.initKline(false);
 		//获取每个平台,每个交易对的 今日开盘价格, 从k线图里面获取,每1.5分钟跑一次
+		System.out.println("正在加载今日每种交易对的开盘价格,也就是0晨的收盘价格");
 		TaskUtil.initTodayOpen();
 		//初始化所有实时行情信息,到h2数据库中
+		System.out.println("将实时行情信息的基础信息加载到h2中");
 		TaskUtil.initMarketAllToH2DB();
 		//加载今日实时行情数据,每1.5钟跑一次,更改h2内存数据,最高价,最低价,交易量,交易额
+		System.out.println("将今日相关数据放入h2内存数据中");
 		TaskUtil.initTodayNewData();
 		//从数据库里面加载最新的比特币数量,这个不需要做成任务
+		System.out.println("从数据库加载比特币的数量,用于计算流通量");
 		TaskUtil.initBtcCountByDb();
 		//定时计算全网平均数据,每分钟计算一次,并推送到服务器端
+		System.out.println("计算全网的平均数据");
 		TaskUtil.initBxsMarket();
+		System.out.println("启动成功,开始启动定时器");
 	}
 	
 	//定时计算全网平均数据,每分钟计算一次,并推送到服务器端
@@ -69,8 +81,8 @@ public class TaskUtil {
 		sql+="avg(buyrmb) as buyrmb,avg(sellrmb) as sellrmb,max(allMoneyrmb) as allMoneyrmb,";
 		sql+="min(lowrmb) as lowrmb,max(highrmb) as highrmb,";
 		sql+="sum(volrmb) as volrmb,sum(amount) as amount,";
-		sql+="avg(zhangfuMoneyrmb) as zhangfuMoneyrmb,avg(zhangfu) as zhangfu";
-		sql+="FROM markethistory group by moneytype,moneytypeName";
+		sql+="avg(zhangfuMoneyrmb) as zhangfuMoneyrmb,avg(zhangfu) as zhangfu ";
+		sql+="FROM market group by moneytype,moneytypeName";
 		List<Map<String, Object>> list = H2Util.select(sql);
 		for (Map<String, Object> map : list) {
 			CacheData.bxsMarket.put(map.get("moneytype").toString(), map);
@@ -102,6 +114,8 @@ public class TaskUtil {
 				buyParmeterThread.run();//同步运行
 			}
 		}
+		//每次采集交易对后,将新的币种,放入bitbinfo表里面
+		TaskUtil.insertIntoBitbInfo();
 	}
 	//初始化所有的HttpUtil,启动执行一次
 	public static void InitAllHttpUtils() {
@@ -291,6 +305,11 @@ public class TaskUtil {
 				baseHttp.getKLineData(marketHistory, marketHistoryMapper, size, dbCurrentTime);
 			}
 		}
+	}
+	//每次采集交易对后,将新的币种,放入bitbinfo表里面
+	public static void insertIntoBitbInfo() {
+		ThirdpartysupportmoneyMapper thirdpartysupportmoneyMapper= SpringUtil.getBean(ThirdpartysupportmoneyMapper.class);
+		thirdpartysupportmoneyMapper.insertIntoBitbInfo();
 	}
 	
 	public static void main(String[] args) {

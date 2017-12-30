@@ -86,7 +86,9 @@ public class WebSocketUtils extends WebSocketClient {
 				if (marketJsonStr.contains("depth.step1")) {//是买盘买盘数据
 					MarketDepthVo1 marketDepthVo1 = JSON.parseObject(marketJsonStr, MarketDepthVo1.class);
 					MarketDepthVo marketDepthVo = marketDepthVo1.getTick();
-					CacheData.sellBuyDisk.put(platformid+"."+marketDepthVo1.getCh().split("\\.")[1], marketDepthVo);
+					if (marketDepthVo != null && marketDepthVo.getAsks() != null) {
+						CacheData.sellBuyDisk.put(platformid+"."+marketDepthVo1.getCh().split("\\.")[1], marketDepthVo);
+					}
 				}else if (marketJsonStr.contains("trade.detail")) {
 					//实时行情数据
 					MarketVo1 vo1 = JSON.parseObject(marketJsonStr, MarketVo1.class);

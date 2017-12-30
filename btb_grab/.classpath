@@ -60,6 +60,9 @@
 	<classpathentry kind="lib" path="lib/h2-1.4.196.jar"/>
 	<classpathentry kind="lib" path="lib/aspectjweaver-1.8.4.jar"/>
 	<classpathentry kind="lib" path="lib/aopalliance-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/mongodb-driver-async-3.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/bson-3.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/mongodb-driver-core-3.6.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

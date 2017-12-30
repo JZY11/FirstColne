@@ -16,4 +16,6 @@ public interface ThirdpartysupportmoneyMapper extends Mapper<Thirdpartysupportmo
 	
 	List<Thirdpartysupportmoney> findmoneypairByplatformid(String platformid);
 	
+	void insertIntoBitbInfo();
+	
 }

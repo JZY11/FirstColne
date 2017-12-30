@@ -18,4 +18,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		select * from thirdpartysupportmoney where platformid = #{platformid}
 	</select>
 	
+	<!-- 每次采集后,将采集的新比特币,添加到bitb信息表里面 -->
+	<insert id="insertIntoBitbInfo">
+		insert into bitbinfo(bitbcode) select DISTINCT moneytype from thirdpartysupportmoney  where moneytype not in (SELECT DISTINCT bitbcode from bitbinfo)
+	</insert>
+	
 </mapper>

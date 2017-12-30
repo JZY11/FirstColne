@@ -184,7 +184,7 @@ public class H2Util {
 		for (Field field : fields) {
 			String fieldName = field.getName();
 			try {
-				if (!fieldName.equals("id")) {
+				if (!fieldName.equals("_id")) {
 					columns.put(fieldName, Market.class.getMethod("get"+fieldName.substring(0,1).toUpperCase()+fieldName.substring(1)));
 				}
 			} catch (NoSuchMethodException e) {
@@ -220,7 +220,7 @@ public class H2Util {
 		}
 		sql+= " where id=?";
 		//System.out.println(sql);
-		parms.add(market.getId());
+		parms.add(market.get_id());
 		try {
 			PreparedStatement prepareStatement = connection.prepareStatement(sql);
 			for (int i=0;i<parms.size();i++) {
@@ -232,7 +232,7 @@ public class H2Util {
 				String insertColumnStr="";
 				String zhanwei="?,";
 				parms=new ArrayList<>();
-				parms.add(market.getId());
+				parms.add(market.get_id());
 				for(String columName:columns.keySet()){
 					Method method = columns.get(columName);
 					try {

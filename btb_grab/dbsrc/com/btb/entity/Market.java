@@ -23,7 +23,7 @@ public class Market {
 		this.buymoneytype=buymoneytype;
 		this.platformid=platformid;
 	}
-	String id;//自动计算  平台id.交易对
+	String _id;//自动计算  平台id.交易对
 	//必填
 	String platformid;//平台id  
 	String platformName;//平台名称
@@ -70,9 +70,10 @@ public class Market {
 		allMoneyCount=CacheData.bitbCountMap.get(moneytype);
 		return allMoneyCount;
 	}
-	public String getId() {
-		id=getPlatformid()+"."+getMoneypair();
-		return id;
+	
+	public String get_id() {
+		_id=getPlatformid()+"."+getMoneypair();
+		return _id;
 	}
 	public BigDecimal getBuy() {
 		return buy;
@@ -123,7 +124,7 @@ public class Market {
 		this.moneypair = moneypair;
 	}
 	public BigDecimal getOpen() {
-		open=CacheData.todayOpen.get(getId());
+		open=CacheData.todayOpen.get(get_id());
 		return open;
 	}
 	public BigDecimal getOpenrmb() {
