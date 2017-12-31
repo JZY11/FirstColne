@@ -12,6 +12,7 @@ import org.quartz.JobExecutionException;
 import com.btb.dao.MarketMapper;
 import com.btb.entity.Market;
 import com.btb.entity.Markethistory;
+import com.btb.entity.Tasklog;
 import com.btb.tasks.service.BaseJob;
 import com.btb.tasks.threads.MarketHistoryKlineTread;
 import com.btb.util.BaseHttp;
@@ -23,9 +24,9 @@ public class MarketHistoryKlineJob extends BaseJob {
 	//platformId, 交易对
 	@Override
 	public void execute(JobExecutionContext job) throws JobExecutionException {
+		System.out.println("采集k线图分钟数据,每1.5分钟执行一次, 每个平台一个线程");
+		Tasklog.save(new Tasklog("采集k线图分钟数据,每1.5分钟执行一次, 每个平台一个线程"));
 		TaskUtil.initKline(true);
-		//加载每个平台的btc,eth价格, 每1.5分钟执行一次,这个是执行一次,任务放在k线图里面
-		TaskUtil.initBtcEthNowMoney();
 	}
 
 	@Override

@@ -6,15 +6,18 @@ import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
+import com.btb.entity.Tasklog;
 import com.btb.tasks.service.BaseJob;
 import com.btb.util.TaskUtil;
 //启动加载每个平台的btc,eth价格, 每1.5分钟执行一次
-public class InitBtcEthNowMoney extends BaseJob {
+public class InitBuyMonetyTypeRate extends BaseJob {
 
 	@Override
 	public void execute(JobExecutionContext job) throws JobExecutionException {
 		// TODO Auto-generated method stub
-		TaskUtil.initBtcEthNowMoney();
+		System.out.println("启动加载每个平台的btc,eth价格也就是buymonetyType, 每1.5分钟执行一次");
+		Tasklog.save(new Tasklog("启动加载每个平台的btc,eth价格也就是buymonetyType, 每1.5分钟执行一次"));
+		TaskUtil.initBuyMonetyTypeRate();
 	}
 
 	@Override

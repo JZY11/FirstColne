@@ -8,6 +8,7 @@ import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
+import com.btb.entity.Tasklog;
 import com.btb.tasks.service.BaseJob;
 import com.btb.util.TaskUtil;
 
@@ -17,6 +18,7 @@ public class BitbCountJob extends BaseJob {
 	public void execute(JobExecutionContext job) throws JobExecutionException {
 		// TODO Auto-generated method stub
 		System.out.println("任务:每1小时获取一次流通量");
+		Tasklog.save(new Tasklog("任务:每1小时获取一次流通量"));
 		TaskUtil.getBitbCount();
 	}
 

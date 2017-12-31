@@ -16,6 +16,7 @@ import org.quartz.SchedulerException;
 import com.btb.dao.ThirdpartyplatforminfoMpper;
 import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.QueryVo;
+import com.btb.entity.Tasklog;
 import com.btb.entity.Thirdpartyplatforminfo;
 import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.tasks.service.BaseJob;
@@ -37,7 +38,8 @@ public class BuyParmeterJob extends BaseJob {
 	@Override
 	public void execute(JobExecutionContext job) throws JobExecutionException {
 		// TODO Auto-generated method stub
-		System.out.println("job-  采集交易对");
+		System.out.println("采集每个平台支持的交易对, 多少平台多少线程,调用httpUtil的采集交易对");
+		Tasklog.save(new Tasklog("采集每个平台支持的交易对, 多少平台多少线程,调用httpUtil的采集交易对"));
 		//获取所有平台
 		TaskUtil.initMoneypair(true);
 	}

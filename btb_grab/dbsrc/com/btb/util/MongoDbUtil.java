@@ -33,22 +33,32 @@ import java.math.BigDecimal;
 
 public class MongoDbUtil {
 	private static MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
-	private static  MongoDatabase database = mongoClient.getDatabase("bxs");
+	private static MongoDatabase database = mongoClient.getDatabase("bxs");
     private static MongoCollection<Document> marketTab = database.getCollection("market");
+    private static MongoCollection<Document> buySellDiskTab = database.getCollection("buySellDisk");
     
-    public static void main(String[] args) throws InterruptedException {
-    	
-    	Market market=new Market(null, null);
-		market.setPlatformid("test3");
-		market.setMoneypair("btcUsdt");
-		market.setHigh(new BigDecimal("100.88888"));
-		market.setClose(new BigDecimal("1000.9087"));
-		market.setBuy(new BigDecimal("123456"));
-		insertOrUpdate(market);
-	}
+    public static void insertOrUpdateBuySellDiskTab(final Map<String, Object> map) {
+    	Document document=new Document();
+    	for (String key : map.keySet()) {
+			if (!key.equals("_id")) {
+				document.append(key, map.get(key));
+			}
+		}
+    	//不存在就添加
+    	UpdateOptions updateOptions = new UpdateOptions();
+    	updateOptions.upsert(true);
+		buySellDiskTab.updateOne(eq("_id", map.get("_id")), new Document("$set", document),updateOptions, new SingleResultCallback<UpdateResult>() {
+			@Override
+			public void onResult(UpdateResult result, Throwable ex) {
+				if (ex!=null) {
+					System.out.println("mongoDb更新报错了:");
+					ex.printStackTrace();
+				}
+			}
+		});
+    }
     
     public static void insertOrUpdate(final Market market) {
-    	final CountDownLatch dropLatch3 = new CountDownLatch(1);
     	Document document=new Document();
     	for(String columName:columns.keySet()){
 			Method method = columns.get(columName);
@@ -65,26 +75,15 @@ public class MongoDbUtil {
     	//不存在就添加
     	UpdateOptions updateOptions = new UpdateOptions();
     	updateOptions.upsert(true);
-    	System.out.println("对象"+document.toJson());
 		marketTab.updateOne(eq("_id", market.get_id()), new Document("$set", document),updateOptions, new SingleResultCallback<UpdateResult>() {
 			@Override
 			public void onResult(UpdateResult result, Throwable ex) {
-				/*long count = result.getMatchedCount();
-				System.out.println("更新数量:"+count);*/
 				if (ex!=null) {
 					System.out.println("mongoDb更新报错了:");
 					ex.printStackTrace();
 				}
-				dropLatch3.countDown();
 			}
 		});
-		try {
-			dropLatch3.await();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	
     }
      
     

@@ -41,7 +41,7 @@ import com.btb.entity.TodayOpenMoney;
 import com.btb.tasks.BitbCountJob;
 import com.btb.tasks.BuyParmeterJob;
 import com.btb.tasks.CheckWebSocketStatusJob;
-import com.btb.tasks.InitBtcEthNowMoney;
+import com.btb.tasks.InitBuyMonetyTypeRate;
 import com.btb.tasks.InitTodayOpenJob;
 import com.btb.tasks.MarketHistoryKlineJob;
 import com.btb.tasks.RateJob;
@@ -99,7 +99,7 @@ public class TaskUtil {
 		
 		//启动加载每个平台的btc,eth价格, 每1.5分钟执行一次,从数据库采集
 		System.out.println("从数据库抓取btc和ehc的最新价格");
-		TaskUtil.initBtcEthNowMoney();
+		TaskUtil.initBuyMonetyTypeRate();
 		//获取每个平台,每个交易对的 今日开盘价格, 从k线图里面获取,每1.5分钟跑一次
 		System.out.println("正在加载今日每种交易对的开盘价格,也就是0晨的收盘价格");
 		TaskUtil.initTodayOpen();
@@ -118,47 +118,32 @@ public class TaskUtil {
 		System.out.println("启动所有平台的websoket");
 		enableWebSocket();
 		
-		/*//获取每个平台,每个交易对的 今日开盘价格, 从k线图里面获取,每1.5分钟跑一次
+		//每隔1小时获取一次,比特币的数量
+		System.out.println("每隔1小时获取一次,比特币的数量");
+		JobManager.addJob(new BitbCountJob());
+		
+		//获取每个平台,每个交易对的 今日开盘价格, 从k线图里面获取,每1.5分钟跑一次
 		System.out.println("获取每个平台,每个交易对的 今日开盘价格, 从k线图里面获取,每1.5分钟跑一次");
 		JobManager.addJob(new InitTodayOpenJob());
 		
 		//启动加载每个平台的btc,eth价格, 每1.5分钟执行一次
-		System.out.println("启动加载每个平台的btc,eth价格, 每1.5分钟执行一次");
-		JobManager.addJob(new InitBtcEthNowMoney());
+		System.out.println("启动加载每个平台的btc,eth价格也就是buymonetyType, 每1.5分钟执行一次");
+		JobManager.addJob(new InitBuyMonetyTypeRate());
 		
-		//加载今日实时行情数据,每1.5钟跑一次,更改h2内存数据,最高价,最低价,交易量,交易额
-		//System.out.println("加载今日实时行情数据,每1.5钟跑一次,更改h2内存数据,最高价,最低价,交易量,交易额");
-		//JobManager.addJob(new InitTodayNewDataJob());
-		
-		//--采集每个平台支持的交易对, 多少平台多少线程,大概200多个线程
-		System.out.println("采集每个平台支持的交易对, 多少平台多少线程,大概200多个线程");
+		//--采集每个平台支持的交易对, 多少平台多少线程
+		System.out.println("采集每个平台支持的交易对, 多少平台多少线程,调用httpUtil的采集交易对");
 		JobManager.addJob(new BuyParmeterJob());
+		
 		
 		//采集k线图分钟数据,每1.5分钟执行一次, 每个平台一个线程,大概200个线程
 		//获取平台所有交易对
 		System.out.println("采集k线图分钟数据,每1.5分钟执行一次, 每个平台一个线程,大概200个线程");
 		JobManager.addJob(new MarketHistoryKlineJob());
 		
-		//银行利率每天执行一次,1个任务
-		System.out.println("//银行利率每天执行一次,1个任务");
+		//银行利率每天执行一次
+		System.out.println("//银行利率每天执行一次");
 		JobManager.addJob(new RateJob());
 		
-		//采集比特币流通数量,暂时先关闭,接口采集来源需要优化
-		System.out.println("//采集比特币流通数量,暂时先关闭,接口采集来源需要优化");
-		//JobManager.addJob(new BtbConutJob());
-		
-		//初始化所有实时行情信息,到h2数据库中
-		//System.out.println("//初始化所有实时行情信息,到h2数据库中");
-		//JobManager.addJob(new InitMarketAllToH2DBJob());
-		
-		//定时计算全网平均数据,每分钟计算一次,并推送到服务器端
-		//System.out.println("定时计算全网平均数据,每分钟计算一次,并推送到服务器端");
-		//JobManager.addJob(new InitInitBxsMarketJob());
-		 
-		 
-		//每隔1小时获取一次,比特币的数量
-		JobManager.addJob(new BitbCountJob());
-		 */	
 	}
 	
 	//每隔1小时获取一次,比特币的数量
@@ -178,11 +163,9 @@ public class TaskUtil {
 	 * 初始化CacheData.moneyPairs,所有平台的交易对
 	 */
 	public static void initMoneypair(Boolean isTask) {
-		ThirdpartyplatforminfoMpper thirdpartyplatforminfoMpper = SpringUtil.getBean(ThirdpartyplatforminfoMpper.class);
-		List<Thirdpartyplatforminfo> thirdpartyplatfos = thirdpartyplatforminfoMpper.selectAll();
-		//循环多编程,采集每个平台的交易对
-		for (Thirdpartyplatforminfo thirdpartyplatforminfo : thirdpartyplatfos) {
-			BuyParmeterThread buyParmeterThread = new BuyParmeterThread(thirdpartyplatforminfo.getId());
+		Set<String> platformids = TaskUtil.platformids;
+		for (String platformid : platformids) {
+			BuyParmeterThread buyParmeterThread = new BuyParmeterThread(platformid);
 			if (isTask) {
 				ThreadPoolManager.workNoResult(buyParmeterThread);
 			}else {
@@ -252,7 +235,7 @@ public class TaskUtil {
 	}
 	
 	//启动加载每个平台的btc,eth价格, 每1.5分钟执行一次
-	public static void initBtcEthNowMoney() {
+	public static void initBuyMonetyTypeRate() {
 		//加载每个平台所有buymoneytype的人民币价格汇率
 		BuyMoneyTypeRateMapper buyMoneyTypeRateMapper = SpringUtil.getBean(BuyMoneyTypeRateMapper.class);
 		List<BuyMoneyTypeRate> selectAll3 = buyMoneyTypeRateMapper.selectAll();

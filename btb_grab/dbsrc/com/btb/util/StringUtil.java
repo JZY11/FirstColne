@@ -170,6 +170,26 @@ public class StringUtil {
 		}else if (moneypair.endsWith("eth")) {
 			jiaoyidui[0]="eth";
 			jiaoyidui[1]=moneypair.substring(0, moneypair.length()-3);
+		}else {
+			//获取所有buymoneytype,和法币,获取交易对
+			Set<String> keySet = TaskUtil.buyMonetyTypeRate.keySet();
+			Set<String> keySet2 = TaskUtil.rateMap.keySet();//获取所有法币
+			keySet.addAll(keySet2);
+			for (String string : keySet) {
+				string = string.toLowerCase();
+				if (moneypair.endsWith(string)) {
+					jiaoyidui[0]=string;
+					jiaoyidui[1]=moneypair.substring(0, moneypair.length()-string.length()).toLowerCase();
+				}
+			}
+			if (jiaoyidui[0]==null) {
+				try {
+					throw new Exception("没有分析出来交易对:"+moneypair);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 		return jiaoyidui;
 	}

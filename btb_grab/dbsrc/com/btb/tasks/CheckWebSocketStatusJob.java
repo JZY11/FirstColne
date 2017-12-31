@@ -12,6 +12,7 @@ import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
+import com.btb.entity.Tasklog;
 import com.btb.tasks.service.BaseJob;
 import com.btb.util.TaskUtil;
 
@@ -61,6 +62,7 @@ public class CheckWebSocketStatusJob extends BaseJob {
 			}
 		}
 		System.out.println("一共:"+webSocketClientMap.size()+"个, 正常链接:"+i+"个,正在链接:"+ii+"个");
+		Tasklog.save(new Tasklog("检查websockit:"+"一共:"+webSocketClientMap.size()+"个, 正常链接:"+i+"个,正在链接:"+ii+"个"));
 	}
 
 	@Override
