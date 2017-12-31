@@ -86,8 +86,9 @@ public class StringUtil {
 				e.printStackTrace();
 			}
 		}
-		if (moneytype.equals("btc") || moneytype.equals("eth")) {
-			BigDecimal fabiToRmb = TaskUtil.nowBtcEthRmb.get(platformid+"."+moneytype).multiply(usdMoney);
+		BigDecimal bigDecimal = TaskUtil.buyMonetyTypeRate.get(platformid+"."+moneytype);
+		if (bigDecimal != null) {
+			BigDecimal fabiToRmb = bigDecimal.multiply(usdMoney);
 			return fabiToRmb;
 		}else {
 			if (moneytype.equals("usdt")) {

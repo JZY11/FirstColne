@@ -107,7 +107,7 @@ public class Market {
 		this.amount = amount;
 	}
 	public BigDecimal getZhangfu() {
-		zhangfu=StringUtil.getbaifenbi(open, close);
+		zhangfu=StringUtil.getbaifenbi(getOpen(), getClose());
 		return zhangfu;
 	}
 	public String getPlatformid() {
@@ -123,11 +123,11 @@ public class Market {
 		this.moneypair = moneypair;
 	}
 	public BigDecimal getOpen() {
-		open=TaskUtil.todayOpen.get(get_id());
+		open=TaskUtil.todayOpen.get(platformid+"."+moneytype+"_"+buymoneytype);
 		return open;
 	}
 	public BigDecimal getOpenrmb() {
-		openrmb=StringUtil.ToRmb(open, platformid, buymoneytype);
+		openrmb=StringUtil.ToRmb(getOpen(), platformid, buymoneytype);
 		return openrmb;
 	}
 	public BigDecimal getClose() {

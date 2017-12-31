@@ -1,6 +1,8 @@
 package com.btb.util;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -22,20 +24,28 @@ import org.xml.sax.SAXException;
 
 import com.alibaba.fastjson.JSON;
 import com.btb.dao.BitbinfoMapper;
+import com.btb.dao.BuyMoneyTypeRateMapper;
 import com.btb.dao.MarketHistoryMapper;
 import com.btb.dao.MarketMapper;
 import com.btb.dao.RateMapper;
 import com.btb.dao.ThirdpartyplatforminfoMpper;
 import com.btb.dao.ThirdpartysupportmoneyMapper;
+import com.btb.dao.TodayOpenMoneyMapper;
 import com.btb.entity.Bitbinfo;
-import com.btb.entity.Market;
+import com.btb.entity.BuyMoneyTypeRate;
 import com.btb.entity.MarketDepthVo;
-import com.btb.entity.Markethistory;
-import com.btb.entity.QueryVo;
 import com.btb.entity.Rate;
 import com.btb.entity.Thirdpartyplatforminfo;
 import com.btb.entity.Thirdpartysupportmoney;
-import com.btb.huobi.HttpUtil;
+import com.btb.entity.TodayOpenMoney;
+import com.btb.tasks.BitbCountJob;
+import com.btb.tasks.BuyParmeterJob;
+import com.btb.tasks.CheckWebSocketStatusJob;
+import com.btb.tasks.InitBtcEthNowMoney;
+import com.btb.tasks.InitTodayOpenJob;
+import com.btb.tasks.MarketHistoryKlineJob;
+import com.btb.tasks.RateJob;
+import com.btb.tasks.service.JobManager;
 import com.btb.tasks.threads.BuyParmeterThread;
 import com.btb.tasks.threads.MarketHistoryKlineTread;
 import com.btb.util.thread.ThreadPoolManager;
@@ -51,15 +61,13 @@ public class TaskUtil {
 	public static Map<String, WebSocketClient> webSocketClientMap = new HashMap<>();
 	//每个交易对,今日开盘价格Map<平台id.交易对,最新价格>
 	public static Map<String, BigDecimal> todayOpen = new HashMap<>();
-	//获取比特币流通量,每隔一小时采集
-	public static Map<String, BigDecimal> bitbCountMap = new HashMap<>();
 	//获取每个平台的btc,eth实时价格,用于转换成人民币
-	//Map<交易平台id.btc/eth>
-	public static Map<String, BigDecimal> nowBtcEthRmb=new HashMap<>();
+	//Map<交易平台id.btc/eth/等等>
+	public static Map<String, BigDecimal> buyMonetyTypeRate=new HashMap<>();
 	//买卖盘Map<交易平台id.交易对,买卖盘>
 	public static Map<String, MarketDepthVo> sellBuyDisk = new HashMap<>();
-	//全网数据,定时1分钟执行一次
-	public static Map<String, Map<String, Object>> bxsMarket = new HashMap<>();
+	//比特币当前数量:用于计算流通市值bitbCountMap
+	public static Map<String, BigDecimal> bitbCountMap = new HashMap<>();
 	//手动填写,所有平台的id集合
 	public static Set<String> platformids=new HashSet<>();
 	static{
@@ -71,6 +79,9 @@ public class TaskUtil {
 	}
 	public static void main(String[] args) {
 		initStartAll();
+		taskList();
+		
+		
 	}
 	
 	public static void initStartAll() {
@@ -81,33 +92,87 @@ public class TaskUtil {
 		//采集所有平台中的交易对,同步//从数据库里面加载防止采集交易对不成功
 		System.out.println("正在从数据库加载交易对");
 		TaskUtil.initMoneypairByDB();
-		System.out.println(TaskUtil.moneyPairs);
-		/*
+		
 		//同步到数据里面获取外汇利率
 		System.out.println("正在从数据库加载外汇汇率");
 		TaskUtil.initWaiHuiToDB();
+		
 		//启动加载每个平台的btc,eth价格, 每1.5分钟执行一次,从数据库采集
 		System.out.println("从数据库抓取btc和ehc的最新价格");
 		TaskUtil.initBtcEthNowMoney();
 		//获取每个平台,每个交易对的 今日开盘价格, 从k线图里面获取,每1.5分钟跑一次
 		System.out.println("正在加载今日每种交易对的开盘价格,也就是0晨的收盘价格");
 		TaskUtil.initTodayOpen();
-		//初始化所有实时行情信息,到h2数据库中
-		//System.out.println("将实时行情信息的基础信息加载到h2中");不需要
-		//TaskUtil.initMarketAllToH2DB();
-		//加载今日实时行情数据,每1.5钟跑一次,更改h2内存数据,最高价,最低价,交易量,交易额
-		//System.out.println("将今日相关数据放入h2内存数据中");
-		//TaskUtil.initTodayNewData();
-		//从数据库里面加载最新的比特币数量,这个不需要做成任务
-		System.out.println("从数据库加载比特币的数量,用于计算流通量");
-		TaskUtil.initBtcCountByDb();
-		//定时计算全网平均数据,每分钟计算一次,并推送到服务器端
-		System.out.println("计算全网的平均数据");*/
+		
+		System.out.println("每一小时获取一次流通量");
+		TaskUtil.getBitbCount();
 	}
 	
-
+	public static void taskList() {
+		//每隔30秒检查一次所有websoket的链接状态,如果断链,重新链接
+		System.out.println("每隔30秒检查一次所有websoket的链接状态,如果断链,重新链接");
+		JobManager.addJob(new CheckWebSocketStatusJob());
+		
+		//所有平台的行情数据采集,,由于需要实时性,所以只能使用websoket
+		//获取所有平台的websoket类
+		System.out.println("启动所有平台的websoket");
+		enableWebSocket();
+		
+		/*//获取每个平台,每个交易对的 今日开盘价格, 从k线图里面获取,每1.5分钟跑一次
+		System.out.println("获取每个平台,每个交易对的 今日开盘价格, 从k线图里面获取,每1.5分钟跑一次");
+		JobManager.addJob(new InitTodayOpenJob());
+		
+		//启动加载每个平台的btc,eth价格, 每1.5分钟执行一次
+		System.out.println("启动加载每个平台的btc,eth价格, 每1.5分钟执行一次");
+		JobManager.addJob(new InitBtcEthNowMoney());
+		
+		//加载今日实时行情数据,每1.5钟跑一次,更改h2内存数据,最高价,最低价,交易量,交易额
+		//System.out.println("加载今日实时行情数据,每1.5钟跑一次,更改h2内存数据,最高价,最低价,交易量,交易额");
+		//JobManager.addJob(new InitTodayNewDataJob());
+		
+		//--采集每个平台支持的交易对, 多少平台多少线程,大概200多个线程
+		System.out.println("采集每个平台支持的交易对, 多少平台多少线程,大概200多个线程");
+		JobManager.addJob(new BuyParmeterJob());
+		
+		//采集k线图分钟数据,每1.5分钟执行一次, 每个平台一个线程,大概200个线程
+		//获取平台所有交易对
+		System.out.println("采集k线图分钟数据,每1.5分钟执行一次, 每个平台一个线程,大概200个线程");
+		JobManager.addJob(new MarketHistoryKlineJob());
+		
+		//银行利率每天执行一次,1个任务
+		System.out.println("//银行利率每天执行一次,1个任务");
+		JobManager.addJob(new RateJob());
+		
+		//采集比特币流通数量,暂时先关闭,接口采集来源需要优化
+		System.out.println("//采集比特币流通数量,暂时先关闭,接口采集来源需要优化");
+		//JobManager.addJob(new BtbConutJob());
+		
+		//初始化所有实时行情信息,到h2数据库中
+		//System.out.println("//初始化所有实时行情信息,到h2数据库中");
+		//JobManager.addJob(new InitMarketAllToH2DBJob());
+		
+		//定时计算全网平均数据,每分钟计算一次,并推送到服务器端
+		//System.out.println("定时计算全网平均数据,每分钟计算一次,并推送到服务器端");
+		//JobManager.addJob(new InitInitBxsMarketJob());
+		 
+		 
+		//每隔1小时获取一次,比特币的数量
+		JobManager.addJob(new BitbCountJob());
+		 */	
+	}
 	
-
+	//每隔1小时获取一次,比特币的数量
+	public static void getBitbCount() {
+		//比特币流通量
+		BitbinfoMapper bitbinfoMapper = SpringUtil.getBean(BitbinfoMapper.class);
+		List<Bitbinfo> selectAll2 = bitbinfoMapper.selectAll();
+		for (Bitbinfo bitbInfo : selectAll2) {
+			//放到集合里面
+			if (bitbInfo.getCurrentcount() != null) {
+				TaskUtil.bitbCountMap.put(bitbInfo.getBitbcode().toLowerCase(), bitbInfo.getCurrentcount());
+			}
+		}
+	}
 	
 	/**
 	 * 初始化CacheData.moneyPairs,所有平台的交易对
@@ -140,17 +205,6 @@ public class TaskUtil {
 			TaskUtil.moneyPairs.put(platformid, findmoneypairByplatformid);
 		}
  	}
-	/**
-	 * 从数据库里面加载最新的比特币数量
-	 */
-	public static void initBtcCountByDb() {
-		BitbinfoMapper bitbinfoMapper = SpringUtil.getBean(BitbinfoMapper.class);
-		List<Bitbinfo> selectAll = bitbinfoMapper.selectAll();
-		for (Bitbinfo bitbInfo : selectAll) {
-			//放到集合里面
-			TaskUtil.bitbCountMap.put(bitbInfo.getBitbcode(), bitbInfo.getCurrentcount());
-		}
-	}
 	
 	
 	/**
@@ -183,26 +237,57 @@ public class TaskUtil {
 	
 	//加载数据库今日开盘价格
 	public static void initTodayOpen() {
+		//今日开盘价格
+		TodayOpenMoneyMapper todayOpenMoneyMapper = SpringUtil.getBean(TodayOpenMoneyMapper.class);
+		for (String platformid : platformids) {
+			TodayOpenMoney todayOpenMoney = new TodayOpenMoney();
+			todayOpenMoney.setPlatformid(platformid);
+			List<TodayOpenMoney> list = todayOpenMoneyMapper.select(todayOpenMoney);
+			for (TodayOpenMoney todayOpenMoney2 : list) {
+				todayOpen.put(todayOpenMoney2.getId(), todayOpenMoney2.getOpenrmb());
+			}
+		}
+		
 		
 	}
 	
-/*	//加载行情数据到h2数据库中
-	public static void initMarketAllToH2DB() {
-		MarketMapper marketMapper = SpringUtil.getBean(MarketMapper.class);
-		List<Market> marketInfo = marketMapper.findAllMarketInfo();
-		for (Market market : marketInfo) {
-			H2Util.insertOrUpdate(market);
-		}
-	}*/
-	
 	//启动加载每个平台的btc,eth价格, 每1.5分钟执行一次
 	public static void initBtcEthNowMoney() {
-		MarketHistoryMapper marketMapper = SpringUtil.getBean(MarketHistoryMapper.class);
-		List<QueryVo> list = marketMapper.findBestNewRmbByBtcAndEth();
-		for (QueryVo queryVo : list) {
-			TaskUtil.nowBtcEthRmb.put(queryVo.getPlatformid(), queryVo.getClosermb());
+		//加载每个平台所有buymoneytype的人民币价格汇率
+		BuyMoneyTypeRateMapper buyMoneyTypeRateMapper = SpringUtil.getBean(BuyMoneyTypeRateMapper.class);
+		List<BuyMoneyTypeRate> selectAll3 = buyMoneyTypeRateMapper.selectAll();
+		for (BuyMoneyTypeRate buyMoneyTypeRate1 : selectAll3) {
+			buyMonetyTypeRate.put(buyMoneyTypeRate1.getId(), buyMoneyTypeRate1.getClosermb());
 		}
 	}
+	
+	//开启websocket服务
+	public static void enableWebSocket() {
+		List<Class<WebSocketClient>> webSocketUtils = StringUtil.getAllWebSocketUtils();
+		for (Class<WebSocketClient> webSocketUtil : webSocketUtils) {
+			try {
+				Method method = webSocketUtil.getMethod("executeWebSocket");
+				WebSocketClient webSocketClient = (WebSocketClient)method.invoke(null, null);
+				TaskUtil.webSocketClientMap.put(webSocketUtil.getMethod("getPlatFormId").invoke(null, null).toString(), webSocketClient);
+			} catch (NoSuchMethodException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+		
 	/**
 	 * 加载所有平台的btc_usdt,和eth_usdt,这两个是最基础的需要先计算
 	 * 只在线下计算,不放在在启动中
