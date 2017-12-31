@@ -12,7 +12,7 @@ import tk.mybatis.mapper.common.Mapper;
 public interface MarketHistoryMapper extends Mapper<Markethistory> {
 	
 	Long getMaxTimeId(Markethistory marketHistory);
-	BigDecimal findTodayOpenMoney(Markethistory markethistory);
+	List<Markethistory> findTodayOpenMoney();
 	
 	List<QueryVo> findBestNewRmbByBtcAndEth();
 	List<Thirdpartysupportmoney> findAllPingTaiEthAndBtc();

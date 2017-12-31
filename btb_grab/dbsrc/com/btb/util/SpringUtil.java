@@ -17,7 +17,7 @@ public class SpringUtil {
 	public static void testinitSpring() {
 		Map<String, BaseHttp> beanHttpMap = SpringUtil.context.getBeansOfType(BaseHttp.class);
 		for (BaseHttp baseHttp : beanHttpMap.values()) {
-			CacheData.httpBeans.put(baseHttp.getPlatformId(), baseHttp);
+			TaskUtil.httpBeans.put(baseHttp.getPlatformId(), baseHttp);
 		}
 	}
 	

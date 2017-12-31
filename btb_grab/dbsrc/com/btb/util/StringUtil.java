@@ -87,7 +87,7 @@ public class StringUtil {
 			}
 		}
 		if (moneytype.equals("btc") || moneytype.equals("eth")) {
-			BigDecimal fabiToRmb = CacheData.nowBtcEthRmb.get(platformid+"."+moneytype).multiply(usdMoney);
+			BigDecimal fabiToRmb = TaskUtil.nowBtcEthRmb.get(platformid+"."+moneytype).multiply(usdMoney);
 			return fabiToRmb;
 		}else {
 			if (moneytype.equals("usdt")) {
@@ -104,7 +104,7 @@ public class StringUtil {
 		if (usdMoney==null) {
 			return null;
 		}
-		BigDecimal rabe = CacheData.rateMap.get(moneyType.toUpperCase());
+		BigDecimal rabe = TaskUtil.rateMap.get(moneyType.toUpperCase());
 		return usdMoney.divide(rabe, 8, RoundingMode.HALF_UP);
 	}
 	public static BigDecimal fabiToRmb(BigDecimal usdMoney) {
@@ -112,7 +112,7 @@ public class StringUtil {
 		if (usdMoney==null) {
 			return null;
 		}
-		return usdMoney.divide(CacheData.rateMap.get(moneyType), 8, RoundingMode.HALF_UP);
+		return usdMoney.divide(TaskUtil.rateMap.get(moneyType), 8, RoundingMode.HALF_UP);
 	}
 	
 	public static List<Class<WebSocketClient>> getAllWebSocketUtils() {

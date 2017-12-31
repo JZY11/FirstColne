@@ -13,7 +13,6 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 import com.btb.tasks.service.BaseJob;
-import com.btb.util.CacheData;
 import com.btb.util.TaskUtil;
 
 public class CheckWebSocketStatusJob extends BaseJob {
@@ -21,7 +20,7 @@ public class CheckWebSocketStatusJob extends BaseJob {
 	@Override
 	public void execute(JobExecutionContext job) throws JobExecutionException {
 		// TODO Auto-generated method stub
-		Map<String, WebSocketClient> webSocketClientMap = CacheData.webSocketClientMap;
+		Map<String, WebSocketClient> webSocketClientMap = TaskUtil.webSocketClientMap;
 		int i=0;
 		int ii=0;
 		for (String key : webSocketClientMap.keySet()) {
@@ -41,7 +40,7 @@ public class CheckWebSocketStatusJob extends BaseJob {
 					try {
 						Method method = webSocketUtil.getMethod("executeWebSocket");
 						WebSocketClient webSocketClient2 = (WebSocketClient)method.invoke(null, null);
-						CacheData.webSocketClientMap.put(webSocketUtil.getMethod("getPlatFormId").invoke(null, null).toString(), webSocketClient2);
+						TaskUtil.webSocketClientMap.put(webSocketUtil.getMethod("getPlatFormId").invoke(null, null).toString(), webSocketClient2);
 					} catch (NoSuchMethodException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

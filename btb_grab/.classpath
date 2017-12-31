@@ -4,7 +4,7 @@
 	<classpathentry kind="src" path="config"/>
 	<classpathentry kind="src" path="dbsrc"/>
 	<classpathentry kind="src" path="Test"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.7.0_72"/>
 	<classpathentry kind="lib" path="lib/fastjson-1.2.2.jar"/>
 	<classpathentry kind="lib" path="lib/jsoup-1.11.2.jar"/>
 	<classpathentry kind="lib" path="lib/druid-1.0.9.jar"/>

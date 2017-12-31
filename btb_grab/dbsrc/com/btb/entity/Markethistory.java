@@ -11,6 +11,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 
 import com.btb.util.DateUtil;
 import com.btb.util.StringUtil;
@@ -25,13 +26,15 @@ public class Markethistory {
 		this.platformid=platformid;
 	}
 	@Id
+	String id;
 	String platformid;//平台id
-	@Id
 	String moneypair;//交易对比如btcuatf
 	@Id
 	Long timeid;//timelongid
 	String moneytype;
 	String buymoneytype;
+	@Transient
+	String today;//不在数据库中
 	String time_min;
 	String time_hour;
 	String time_week;
@@ -53,6 +56,10 @@ public class Markethistory {
 	BigDecimal amount;//1分钟成交量
 	
 	
+	public String getId() {
+		id=getPlatformid()+"."+getMoneypair();
+		return id;
+	}
 	public String getMoneytype() {
 		return moneytype;
 	}

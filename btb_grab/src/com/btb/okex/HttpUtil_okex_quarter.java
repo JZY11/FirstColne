@@ -21,7 +21,6 @@ import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.huobi.vo.MarketHistoryVo1;
 import com.btb.huobi.vo.MarketHistoryVo2;
 import com.btb.util.BaseHttp;
-import com.btb.util.CacheData;
 import com.btb.util.JsoupUtil;
 import com.btb.util.SpringUtil;
 import com.btb.util.StringUtil;

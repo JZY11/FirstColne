@@ -27,7 +27,9 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 
 public class MongoDbUtil {
 	private static MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
@@ -36,49 +38,43 @@ public class MongoDbUtil {
     
     public static void main(String[] args) throws InterruptedException {
     	
-    	final CountDownLatch dropLatch3 = new CountDownLatch(1);
-		marketTab.updateOne(eq("_id_", "test"), set("moneytype", "宋荣洋"), new SingleResultCallback<UpdateResult>() {
-			@Override
-			public void onResult(UpdateResult result, Throwable arg1) {
-				long count = result.getMatchedCount();
-				if (count==0) {
-					Document document = new Document("_id", "test12");
-					document.append("moneytype", "宋荣洋");
-					marketTab.insertOne(document,new SingleResultCallback<Void>(){
-						@Override
-						public void onResult(Void arg0, Throwable arg1) {
-							
-						}
-						
-					});
-				}
-				System.out.println(count);
-				dropLatch3.countDown();
-			}
-		});
-		dropLatch3.await();
+    	Market market=new Market(null, null);
+		market.setPlatformid("test3");
+		market.setMoneypair("btcUsdt");
+		market.setHigh(new BigDecimal("100.88888"));
+		market.setClose(new BigDecimal("1000.9087"));
+		market.setBuy(new BigDecimal("123456"));
+		insertOrUpdate(market);
 	}
     
-    public static void insertOrUpdate(Market market) {
+    public static void insertOrUpdate(final Market market) {
     	final CountDownLatch dropLatch3 = new CountDownLatch(1);
-    	Bson bson = set("moneytype", "宋荣洋");
-    	
-		marketTab.updateOne(eq("_id", market.get_id()), set("moneytype", "宋荣洋"), new SingleResultCallback<UpdateResult>() {
-			@Override
-			public void onResult(UpdateResult result, Throwable arg1) {
-				long count = result.getMatchedCount();
-				if (count==0) {
-					Document document = new Document("_id", "test12");
-					document.append("moneytype", "宋荣洋");
-					marketTab.insertOne(document,new SingleResultCallback<Void>(){
-						@Override
-						public void onResult(Void arg0, Throwable arg1) {
-							
-						}
-						
-					});
+    	Document document=new Document();
+    	for(String columName:columns.keySet()){
+			Method method = columns.get(columName);
+			try {
+				Object object = method.invoke(market, null);
+				if (object != null) {
+					document.append(columName,object);
 				}
-				System.out.println(count);
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+    	//不存在就添加
+    	UpdateOptions updateOptions = new UpdateOptions();
+    	updateOptions.upsert(true);
+    	System.out.println("对象"+document.toJson());
+		marketTab.updateOne(eq("_id", market.get_id()), new Document("$set", document),updateOptions, new SingleResultCallback<UpdateResult>() {
+			@Override
+			public void onResult(UpdateResult result, Throwable ex) {
+				/*long count = result.getMatchedCount();
+				System.out.println("更新数量:"+count);*/
+				if (ex!=null) {
+					System.out.println("mongoDb更新报错了:");
+					ex.printStackTrace();
+				}
 				dropLatch3.countDown();
 			}
 		});

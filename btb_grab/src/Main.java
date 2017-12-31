@@ -9,19 +9,16 @@ import com.btb.tasks.BtbConutJob;
 import com.btb.tasks.BuyParmeterJob;
 import com.btb.tasks.CheckWebSocketStatusJob;
 import com.btb.tasks.InitBtcEthNowMoney;
-import com.btb.tasks.InitInitBxsMarketJob;
-import com.btb.tasks.InitMarketAllToH2DBJob;
-import com.btb.tasks.InitTodayNewDataJob;
+//import com.btb.tasks.InitInitBxsMarketJob;
+//import com.btb.tasks.InitMarketAllToH2DBJob;
+//import com.btb.tasks.InitTodayNewDataJob;
 import com.btb.tasks.InitTodayOpenJob;
 import com.btb.tasks.MarketHistoryKlineJob;
-import com.btb.tasks.PushMarketJob;
+//import com.btb.tasks.PushMarketJob;
 import com.btb.tasks.RateJob;
 import com.btb.tasks.service.JobManager;
-import com.btb.util.CacheData;
-import com.btb.util.MyWebSocketClient;
 import com.btb.util.StringUtil;
 import com.btb.util.TaskUtil;
-import com.btb.util.thread.ThreadPoolManager;
 
 public class Main {
 	public static void main(String[] args) {
@@ -47,8 +44,8 @@ public class Main {
 		JobManager.addJob(new InitBtcEthNowMoney());
 		
 		//加载今日实时行情数据,每1.5钟跑一次,更改h2内存数据,最高价,最低价,交易量,交易额
-		System.out.println("加载今日实时行情数据,每1.5钟跑一次,更改h2内存数据,最高价,最低价,交易量,交易额");
-		JobManager.addJob(new InitTodayNewDataJob());
+		//System.out.println("加载今日实时行情数据,每1.5钟跑一次,更改h2内存数据,最高价,最低价,交易量,交易额");
+		//JobManager.addJob(new InitTodayNewDataJob());
 		
 		//--采集每个平台支持的交易对, 多少平台多少线程,大概200多个线程
 		System.out.println("采集每个平台支持的交易对, 多少平台多少线程,大概200多个线程");
@@ -68,24 +65,13 @@ public class Main {
 		JobManager.addJob(new BtbConutJob());
 		
 		//初始化所有实时行情信息,到h2数据库中
-		System.out.println("//初始化所有实时行情信息,到h2数据库中");
-		JobManager.addJob(new InitMarketAllToH2DBJob());
+		//System.out.println("//初始化所有实时行情信息,到h2数据库中");
+		//JobManager.addJob(new InitMarketAllToH2DBJob());
 		
 		//定时计算全网平均数据,每分钟计算一次,并推送到服务器端
-		System.out.println("定时计算全网平均数据,每分钟计算一次,并推送到服务器端");
-		JobManager.addJob(new InitInitBxsMarketJob());
+		//System.out.println("定时计算全网平均数据,每分钟计算一次,并推送到服务器端");
+		//JobManager.addJob(new InitInitBxsMarketJob());
 		
-		//启动websocket
-		try {
-			WebSocketClient executeWebSocket = MyWebSocketClient.executeWebSocket();
-			CacheData.webSocketClientMap.put("bxsAdmin", executeWebSocket);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		//启动循环推送行情信息,每0.5秒一次
-		System.out.println("启动循环推送行情信息,每1秒一次");
-		JobManager.addJob(PushMarketJob.class);
 	}
 	
 	//开启websocket服务
@@ -95,7 +81,7 @@ public class Main {
 			try {
 				Method method = webSocketUtil.getMethod("executeWebSocket");
 				WebSocketClient webSocketClient = (WebSocketClient)method.invoke(null, null);
-				CacheData.webSocketClientMap.put(webSocketUtil.getMethod("getPlatFormId").invoke(null, null).toString(), webSocketClient);
+				TaskUtil.webSocketClientMap.put(webSocketUtil.getMethod("getPlatFormId").invoke(null, null).toString(), webSocketClient);
 			} catch (NoSuchMethodException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

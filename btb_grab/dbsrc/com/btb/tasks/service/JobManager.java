@@ -14,7 +14,6 @@ import org.quartz.SchedulerFactory;
 import org.quartz.Trigger;
 import org.quartz.impl.StdSchedulerFactory;
 
-import com.btb.tasks.PushMarketJob;
 import com.btb.util.IdManage;
 
 import static org.quartz.JobBuilder.newJob; 
@@ -121,9 +120,6 @@ public class JobManager {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-	public static void main(String[] args) throws SchedulerException {
-		addJob(PushMarketJob.class);
 	}
 	
 	

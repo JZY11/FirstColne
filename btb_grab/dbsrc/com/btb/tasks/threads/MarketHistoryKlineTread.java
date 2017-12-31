@@ -6,8 +6,8 @@ import com.btb.dao.MarketHistoryMapper;
 import com.btb.entity.Markethistory;
 import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.util.BaseHttp;
-import com.btb.util.CacheData;
 import com.btb.util.SpringUtil;
+import com.btb.util.TaskUtil;
 
 public class MarketHistoryKlineTread extends Thread {
 	String platformid;
@@ -19,7 +19,7 @@ public class MarketHistoryKlineTread extends Thread {
 	public void run() {
 		
 		MarketHistoryMapper marketHistoryMapper = SpringUtil.getBean(MarketHistoryMapper.class);
-		List<Thirdpartysupportmoney> moneyPairs = CacheData.moneyPairs.get(platformid);
+		List<Thirdpartysupportmoney> moneyPairs = TaskUtil.moneyPairs.get(platformid);
 		
 		for (Thirdpartysupportmoney thirdpartysupportmoney : moneyPairs) {
 			Markethistory marketHistory = new Markethistory();
@@ -37,7 +37,7 @@ public class MarketHistoryKlineTread extends Thread {
 				size=1440;
 			}
 			if (size != 0) {
-				BaseHttp baseHttp = CacheData.httpBeans.get(marketHistory.getPlatformid());
+				BaseHttp baseHttp = TaskUtil.httpBeans.get(marketHistory.getPlatformid());
 				baseHttp.getKLineData(marketHistory, marketHistoryMapper, size, dbCurrentTime);
 			}
 		}

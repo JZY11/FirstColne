@@ -26,7 +26,7 @@ import com.btb.entity.Market;
 
 
 public class H2Util {
-	private static DruidDataSource dataSource=new DruidDataSource();
+	/*private static DruidDataSource dataSource=new DruidDataSource();
 	 
     static{  
     	dataSource.setDriverClassName("org.h2.Driver");
@@ -157,7 +157,7 @@ public class H2Util {
 				+ "count DECIMAL(28,8),"
 				+ "amount DECIMAL(28,8)"
 				+ ")");
-		/*//创建交易平台信息表
+		//创建交易平台信息表
 		exec("create table IF NOT EXISTS thirdpartyplatforminfo("
 				+ "id varchar(255) PRIMARY KEY,"
 				+ "name varchar(255),"
@@ -175,7 +175,7 @@ public class H2Util {
 				+ "allcount DECIMAL(28,8),"
 				+ "iconurl CLOB,"
 				+ "desc CLOB"
-				+ ")");*/
+				+ ")");
 	}
 	public static Map<String, Method> columns = getColumns();
 	private static Map<String, Method> getColumns() {
@@ -272,5 +272,5 @@ public class H2Util {
 		insertOrUpdate(market);
 		
 		System.out.println(select("select * from market"));;
-	}
+	}*/
 }

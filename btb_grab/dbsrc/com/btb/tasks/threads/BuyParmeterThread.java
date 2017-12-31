@@ -8,8 +8,8 @@ import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.QueryVo;
 import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.util.BaseHttp;
-import com.btb.util.CacheData;
 import com.btb.util.SpringUtil;
+import com.btb.util.TaskUtil;
 
 /**
  * 采集每个平台的交易对,每隔1小时执行一次
@@ -25,7 +25,7 @@ public class BuyParmeterThread extends Thread {
 	@Override
 	public void run() {
 		//根据平台id获取httpUtil对象
-		BaseHttp baseHttp = CacheData.httpBeans.get(platformId);
+		BaseHttp baseHttp = TaskUtil.httpBeans.get(platformId);
 		if (baseHttp != null) {
 			List<Thirdpartysupportmoney> thirdpartysupportmoneys = new ArrayList<>();
 			baseHttp.geThirdpartysupportmoneys(thirdpartysupportmoneys );
@@ -48,7 +48,7 @@ public class BuyParmeterThread extends Thread {
 			if (moneypairs != null && !moneypairs.isEmpty()) {
 				mapper.deleteParam(vo);
 				//重新加载数据
-				CacheData.moneyPairs.put(platformId, thirdpartysupportmoneys);
+				TaskUtil.moneyPairs.put(platformId, thirdpartysupportmoneys);
 			}
 		}
 	}

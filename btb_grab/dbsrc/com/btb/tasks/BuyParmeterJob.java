@@ -22,7 +22,6 @@ import com.btb.tasks.service.BaseJob;
 import com.btb.tasks.service.JobManager;
 import com.btb.tasks.threads.BuyParmeterThread;
 import com.btb.util.BaseHttp;
-import com.btb.util.CacheData;
 import com.btb.util.SpringUtil;
 import com.btb.util.TaskUtil;
 import com.btb.util.thread.ThreadPoolManager;

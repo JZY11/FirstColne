@@ -8,9 +8,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	</select>
 	
 	<!-- 获取今日开盘价格 -->
-	<select id="findTodayOpenMoney" parameterType="com.btb.entity.Markethistory" resultType="BigDecimal">
-		select open from markethistory 
-		where platformid = #{platformid} and moneypair = #{moneypair} and timeid = #{timeid}
+	<select id="findTodayOpenMoney" resultType="com.btb.entity.Markethistory">
+		select aa.platformid,aa.moneypair,aa.moneytype,aa.buymoneytype,aa.openrmb,FROM_UNIXTIME(aa.timeid,'%Y-%m-%d') as today 
+		from markethistory aa join (select platformid,moneypair,UNIX_TIMESTAMP(FROM_UNIXTIME(MAX(timeid),'%Y-%m-%d')) as timeid from markethistory 
+		GROUP BY platformid,moneypair) bb 
+		on aa.platformid=bb.platformid and aa.moneypair=bb.moneypair and aa.timeid=bb.timeid
+
 	</select>
 	
 	

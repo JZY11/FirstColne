@@ -16,7 +16,7 @@ public class BtbConutJob extends BaseJob {
 	@Override
 	public void execute(JobExecutionContext job) throws JobExecutionException {
 		// TODO Auto-generated method stub
-		TaskUtil.initBtcCount();
+		TaskUtil.initBtcCountByDb();
 	}
 
 	@Override

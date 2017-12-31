@@ -6,9 +6,8 @@ import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-
-import com.btb.util.CacheData;
 import com.btb.util.StringUtil;
+import com.btb.util.TaskUtil;
 
 import tk.mybatis.mapper.annotation.NameStyle;
 import tk.mybatis.mapper.code.Style;
@@ -67,12 +66,12 @@ public class Market {
 	
 	
 	public BigDecimal getAllMoneyCount() {
-		allMoneyCount=CacheData.bitbCountMap.get(moneytype);
+		allMoneyCount=TaskUtil.bitbCountMap.get(moneytype);
 		return allMoneyCount;
 	}
 	
 	public String get_id() {
-		_id=getPlatformid()+"."+getMoneypair();
+		_id=getPlatformid()+"."+getMoneytype()+"_"+getBuymoneytype()+".market";
 		return _id;
 	}
 	public BigDecimal getBuy() {
@@ -124,7 +123,7 @@ public class Market {
 		this.moneypair = moneypair;
 	}
 	public BigDecimal getOpen() {
-		open=CacheData.todayOpen.get(get_id());
+		open=TaskUtil.todayOpen.get(get_id());
 		return open;
 	}
 	public BigDecimal getOpenrmb() {

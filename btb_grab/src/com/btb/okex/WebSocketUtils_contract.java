@@ -31,9 +31,9 @@ import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.okex.vo.MarketContractVo1;
 import com.btb.okex.vo.MarketDepthVo1;
 import com.btb.util.BaseHttp;
-import com.btb.util.CacheData;
 import com.btb.util.DBUtil;
 import com.btb.util.H2Util;
+import com.btb.util.MongoDbUtil;
 import com.btb.util.SpringUtil;
 import com.btb.util.TaskUtil;
 public class WebSocketUtils_contract extends WebSocketClient {
@@ -129,7 +129,7 @@ public class WebSocketUtils_contract extends WebSocketClient {
 						}
 					}
 					//添加或者更新行情数据
-					H2Util.insertOrUpdate(market);
+					MongoDbUtil.insertOrUpdate(market);
 				} catch (Exception e) {}
 			}
 		}else if (message.contains("_depth_")) {//深度
@@ -146,7 +146,7 @@ public class WebSocketUtils_contract extends WebSocketClient {
 			if (pid != null) {
 				MarketDepthVo1 marketDepthVo1 = JSON.parseArray(message, MarketDepthVo1.class).get(0);
 				String moneypair = marketDepthVo1.getChannel().replace("ok_sub_spot_", "").replace(endStr, "")+"_usd";
-				CacheData.sellBuyDisk.put(pid+"."+moneypair, marketDepthVo1.getData());
+				TaskUtil.sellBuyDisk.put(pid+"."+moneypair, marketDepthVo1.getData());
 			}
 			
 		}
@@ -158,7 +158,7 @@ public class WebSocketUtils_contract extends WebSocketClient {
 		System.out.println("关流--Connection closed by " + (remote ? "remote peer" : "us"));
 		try {
 			WebSocketClient webSocketClient = executeWebSocket();
-			CacheData.webSocketClientMap.put(platformid_this_week, webSocketClient);
+			TaskUtil.webSocketClientMap.put(platformid_this_week, webSocketClient);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

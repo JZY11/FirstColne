@@ -34,9 +34,9 @@ import com.btb.huobi.vo.MarketVo1;
 import com.btb.huobi.vo.MarketVo1.MarketVo2;
 import com.btb.huobi.vo.MarketVo1.MarketVo3;
 import com.btb.util.BaseHttp;
-import com.btb.util.CacheData;
 import com.btb.util.DBUtil;
 import com.btb.util.H2Util;
+import com.btb.util.MongoDbUtil;
 import com.btb.util.SpringUtil;
 import com.btb.util.StringUtil;
 import com.btb.util.TaskUtil;
@@ -87,7 +87,7 @@ public class WebSocketUtils extends WebSocketClient {
 					MarketDepthVo1 marketDepthVo1 = JSON.parseObject(marketJsonStr, MarketDepthVo1.class);
 					MarketDepthVo marketDepthVo = marketDepthVo1.getTick();
 					if (marketDepthVo != null && marketDepthVo.getAsks() != null) {
-						CacheData.sellBuyDisk.put(platformid+"."+marketDepthVo1.getCh().split("\\.")[1], marketDepthVo);
+						TaskUtil.sellBuyDisk.put(platformid+"."+marketDepthVo1.getCh().split("\\.")[1], marketDepthVo);
 					}
 				}else if (marketJsonStr.contains("trade.detail")) {
 					//实时行情数据
@@ -110,7 +110,7 @@ public class WebSocketUtils extends WebSocketClient {
 							market.setBuy(vo3.getPrice());
 						}
 						//添加或者更新行情数据
-						H2Util.insertOrUpdate(market);
+						MongoDbUtil.insertOrUpdate(market);
 					}
 				}
 			}
@@ -129,7 +129,7 @@ public class WebSocketUtils extends WebSocketClient {
 		System.out.println("关流--Connection closed by " + (remote ? "remote peer" : "us"));
 		try {
 			WebSocketClient webSocketClient = executeWebSocket();
-			CacheData.webSocketClientMap.put(platformid, webSocketClient);
+			TaskUtil.webSocketClientMap.put(platformid, webSocketClient);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
