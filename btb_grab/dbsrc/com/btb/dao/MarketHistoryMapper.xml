@@ -7,31 +7,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		SELECT MAX(timeId) from Markethistory where platformid = #{platformid} and moneypair = #{moneypair}
 	</select>
 	
-	<!-- 获取今日开盘价格 -->
-	<select id="findTodayOpenMoney" resultType="com.btb.entity.Markethistory">
-		select aa.platformid,aa.moneypair,aa.moneytype,aa.buymoneytype,aa.openrmb,FROM_UNIXTIME(aa.timeid,'%Y-%m-%d') as today 
-		from markethistory aa join (select platformid,moneypair,UNIX_TIMESTAMP(FROM_UNIXTIME(MAX(timeid),'%Y-%m-%d')) as timeid from markethistory 
-		GROUP BY platformid,moneypair) bb 
-		on aa.platformid=bb.platformid and aa.moneypair=bb.moneypair and aa.timeid=bb.timeid
-
-	</select>
-	
-	
-	<!-- 
-		获取每个平台的btc和eth价格
-	 -->
-	<select id="findBestNewRmbByBtcAndEth" resultType="com.btb.entity.QueryVo">
-		select CONCAT(platformid,'.',moneytype) as platformid,closermb,MAX(timeid) as timeid from markethistory 
-		where 
-		(moneytype='btc' and buymoneytype='usdt') or (moneytype='eth' and buymoneytype='usdt')
-		GROUP BY CONCAT(platformid,'.',moneytype)
-	</select>
-	
-	<select id="findAllPingTaiEthAndBtc" resultType="com.btb.entity.Thirdpartysupportmoney">
-		SELECT * FROM thirdpartysupportmoney where 
-		(moneytype = 'btc' and buymoneytype='usdt') 
-		or (moneytype = 'eth' and buymoneytype='usdt')
-	</select>
 	
 	<!-- 
 	second: 传入秒, 比如1分:60秒, 1小时:3600秒

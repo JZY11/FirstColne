@@ -227,7 +227,7 @@ public class TaskUtil {
 			todayOpenMoney.setPlatformid(platformid);
 			List<TodayOpenMoney> list = todayOpenMoneyMapper.select(todayOpenMoney);
 			for (TodayOpenMoney todayOpenMoney2 : list) {
-				todayOpen.put(todayOpenMoney2.getId(), todayOpenMoney2.getOpenrmb());
+				todayOpen.put(todayOpenMoney2.getId(), todayOpenMoney2.getOpen());
 			}
 		}
 		

@@ -1,6 +1,7 @@
 package com.btb.entity;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
@@ -50,7 +51,9 @@ public class Market {
 	BigDecimal amount;//今日成交量  //k线图计算,1.5分钟
 	BigDecimal count;//今日成笔数     //k线图计算,1.5分钟,这个必须要
 	
-	
+	public static void main(String[] args) {
+		System.out.println((new BigDecimal("0.00003686").subtract(new BigDecimal("0.00003781"))).multiply(new BigDecimal("104813.4411784000")));
+	}
 	
 	
 	BigDecimal allMoneyrmb;//流通市值 	//币数量乘以最新价格 ,不用设置
@@ -64,7 +67,10 @@ public class Market {
 	BigDecimal zhangfuMoneyrmb;//今日涨幅额度,自动生成
 	BigDecimal openrmb;//人民币, 自动生成
 	
-	
+	Long ts=System.currentTimeMillis();
+	public Long getTs() {
+		return ts;
+	}
 	public BigDecimal getAllMoneyCount() {
 		allMoneyCount=TaskUtil.bitbCountMap.get(moneytype);
 		return allMoneyCount;
@@ -230,7 +236,6 @@ public class Market {
 	public void setBuymoneytype(String buymoneytype) {
 		this.buymoneytype = buymoneytype;
 	}
-	
 	
 	
 }

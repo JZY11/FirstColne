@@ -11,7 +11,7 @@ import tk.mybatis.mapper.code.Style;
 public class TodayOpenMoney {
 	@Id
 	String id;
-	BigDecimal openrmb;
+	BigDecimal open;
 	String today;
 	String platformid;
 	String moneypair;
@@ -49,11 +49,12 @@ public class TodayOpenMoney {
 	public void setId(String id) {
 		this.id = id;
 	}
-	public BigDecimal getOpenrmb() {
-		return openrmb;
+	
+	public BigDecimal getOpen() {
+		return open;
 	}
-	public void setOpenrmb(BigDecimal openrmb) {
-		this.openrmb = openrmb;
+	public void setOpen(BigDecimal open) {
+		this.open = open;
 	}
 	public String getToday() {
 		return today;
