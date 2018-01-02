@@ -57,7 +57,7 @@ public class Markethistory {
 	
 	
 	public String getId() {
-		id=getPlatformid()+"."+getMoneypair();
+		id=getPlatformid()+"."+getMoneytype()+"_"+getBuymoneytype();
 		return id;
 	}
 	public String getMoneytype() {
