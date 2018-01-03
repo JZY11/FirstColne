@@ -33,6 +33,7 @@ public class Market {
 	//必填
 	String moneytype;//币种btcusdt,就是btc 
 	String moneytypeName;//币种btcusdt,就是btc的名字比特币
+	String company;//公司名称
 	String moneytypeIcon;//币种图标
 	String moneytypeUrl;//币种url描述
 	//必填
