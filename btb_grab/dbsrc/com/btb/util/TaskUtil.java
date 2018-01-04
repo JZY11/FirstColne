@@ -33,7 +33,8 @@ import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.dao.TodayOpenMoneyMapper;
 import com.btb.entity.Bitbinfo;
 import com.btb.entity.BuyMoneyTypeRate;
-import com.btb.entity.MarketDepthVo;
+import com.btb.entity.MarketDepth;
+import com.btb.entity.MarketOrder;
 import com.btb.entity.Rate;
 import com.btb.entity.Thirdpartyplatforminfo;
 import com.btb.entity.Thirdpartysupportmoney;
@@ -64,8 +65,8 @@ public class TaskUtil {
 	//获取每个平台的btc,eth实时价格,用于转换成人民币
 	//Map<交易平台id.btc/eth/等等>
 	public static Map<String, BigDecimal> buyMonetyTypeRate=new HashMap<>();
-	//买卖盘Map<交易平台id.交易对,买卖盘>
-	public static Map<String, MarketDepthVo> sellBuyDisk = new HashMap<>();
+	//买卖盘Map<交易平台id.交易对,top10订单集合>
+	public static Map<String, MyList<MarketOrder>> orders = new HashMap<>();
 	//比特币当前数量:用于计算流通市值bitbCountMap
 	public static Map<String, BigDecimal> bitbCountMap = new HashMap<>();
 	//手动填写,所有平台的id集合
@@ -269,6 +270,27 @@ public class TaskUtil {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	//采集订单的时候调用这个
+	public static void putOrders(String platformId,String moneytype,String buymoneytype,MarketOrder marketOrder) {
+		String _id = platformId+"."+moneytype+"_"+buymoneytype;
+		MyList<MarketOrder> myList = orders.get(_id);
+		if (myList == null) {//不存在创建
+			myList = new MyList<>();
+			myList.add(marketOrder);
+			orders.put(_id, myList);
+		}else {
+			myList.add(marketOrder);
+		}
+		if (myList.size()>=10) {//够10个存储到mongodb
+			MongoDbUtil.insertOrUpdateOrderTab(_id, JSON.toJSONString(myList));
+		}
+	}
+	//采集订单的时候调用这个
+	public static void putBuySellDisk(String platformId,String moneytype,String buymoneytype,MarketDepth marketDepth) {
+		String _id = platformId+"."+moneytype+"_"+buymoneytype;
+		MongoDbUtil.insertOrUpdateBuySellDiskTab(_id, JSON.toJSONString(marketDepth));
 	}
 		
 	/**

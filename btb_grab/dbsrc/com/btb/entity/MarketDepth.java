@@ -3,7 +3,7 @@ package com.btb.entity;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class MarketDepthVo {
+public class MarketDepth {
 	List<BigDecimal[]> bids;
 	List<BigDecimal[]> asks;
 	Long ts;

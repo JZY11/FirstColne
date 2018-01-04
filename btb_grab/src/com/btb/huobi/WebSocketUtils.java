@@ -27,7 +27,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.Market;
-import com.btb.entity.MarketDepthVo;
+import com.btb.entity.MarketDepth;
+import com.btb.entity.MarketOrder;
 import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.huobi.vo.MarketDepthVo1;
 import com.btb.huobi.vo.MarketVo1;
@@ -85,9 +86,10 @@ public class WebSocketUtils extends WebSocketClient {
 			} else {
 				if (marketJsonStr.contains("depth.step1")) {//是买盘买盘数据
 					MarketDepthVo1 marketDepthVo1 = JSON.parseObject(marketJsonStr, MarketDepthVo1.class);
-					MarketDepthVo marketDepthVo = marketDepthVo1.getTick();
+					MarketDepth marketDepthVo = marketDepthVo1.getTick();
 					if (marketDepthVo != null && marketDepthVo.getAsks() != null) {
-						TaskUtil.sellBuyDisk.put(platformid+"."+marketDepthVo1.getCh().split("\\.")[1], marketDepthVo);
+						String[] strings = StringUtil.getHuobiBuyMoneytype(marketDepthVo1.getCh().split("\\.")[1]);
+						TaskUtil.putBuySellDisk(platformid, strings[0], strings[1], marketDepthVo);
 					}
 				}else if (marketJsonStr.contains("trade.detail")) {
 					//实时行情数据
@@ -104,13 +106,22 @@ public class WebSocketUtils extends WebSocketClient {
 						market.setBuymoneytype(strings[0]);
 						market.setMoneytype(strings[1]);
 						market.setClose(vo3.getPrice());//最新价格 必填
+						MarketOrder marketOrder = new MarketOrder();
 						if (vo3.getDirection().equals("sell")) {
 							market.setSell(vo3.getPrice());
+							marketOrder.setType("sell");
 						}else {
 							market.setBuy(vo3.getPrice());
+							marketOrder.setType("buy");
 						}
 						//添加或者更新行情数据
 						MongoDbUtil.insertOrUpdate(market);
+						
+						//添加订单数据
+						marketOrder.setPrice(market.getClose());//交易价格
+						marketOrder.setTs(vo3.getTs()*1000);//交易时间
+						marketOrder.setAmount(vo3.getAmount());//交易量
+						TaskUtil.putOrders(platformid, market.getMoneytype(), market.getBuymoneytype(), marketOrder);
 					}
 				}
 			}

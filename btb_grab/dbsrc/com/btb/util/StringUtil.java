@@ -158,7 +158,11 @@ public class StringUtil {
 		}
 		return 0;
 	}
-	
+	/**
+	 * 
+	 * @param moneypair
+	 * @return 0: buymoneyType,1:moneytype
+	 */
 	public static String[] getHuobiBuyMoneytype(String moneypair) {
 		String[] jiaoyidui=new String[2];
 		if (moneypair.endsWith("usdt")) {

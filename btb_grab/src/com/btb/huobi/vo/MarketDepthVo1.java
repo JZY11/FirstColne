@@ -1,11 +1,11 @@
 package com.btb.huobi.vo;
 
-import com.btb.entity.MarketDepthVo;
+import com.btb.entity.MarketDepth;
 
 public class MarketDepthVo1 {
 	String ch;
 	long ts;
-	MarketDepthVo tick;
+	MarketDepth tick;
 	public String getCh() {
 		return ch;
 	}
@@ -18,10 +18,10 @@ public class MarketDepthVo1 {
 	public void setTs(long ts) {
 		this.ts = ts;
 	}
-	public MarketDepthVo getTick() {
+	public MarketDepth getTick() {
 		return tick;
 	}
-	public void setTick(MarketDepthVo tick) {
+	public void setTick(MarketDepth tick) {
 		this.tick = tick;
 	}
 	

@@ -237,6 +237,12 @@ public class Market {
 	public void setBuymoneytype(String buymoneytype) {
 		this.buymoneytype = buymoneytype;
 	}
+	public String getCompany() {
+		return company;
+	}
+	public void setCompany(String company) {
+		this.company = company;
+	}
 	
 	
 }

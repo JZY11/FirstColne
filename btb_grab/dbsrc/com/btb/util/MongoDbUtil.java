@@ -4,6 +4,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import com.btb.entity.Market;
+import com.btb.entity.MarketDepthAndOrdersTop10;
 import com.mongodb.Block;
 import com.mongodb.async.SingleResultCallback;
 import com.mongodb.async.client.*;
@@ -35,19 +36,32 @@ public class MongoDbUtil {
 	private static MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
 	private static MongoDatabase database = mongoClient.getDatabase("bxs");
     private static MongoCollection<Document> marketTab = database.getCollection("market");
-    private static MongoCollection<Document> buySellDiskTab = database.getCollection("buySellDisk");
+    private static MongoCollection<Document> buySellDiskTab = database.getCollection("buySellDiskTop10");
+    private static MongoCollection<Document> ordersTab = database.getCollection("ordersTop10");
     
-    public static void insertOrUpdateBuySellDiskTab(final Map<String, Object> map) {
+    public static void insertOrUpdateOrderTab(final String _id,final String data) {
     	Document document=new Document();
-    	for (String key : map.keySet()) {
-			if (!key.equals("_id")) {
-				document.append(key, map.get(key));
-			}
-		}
+    	document.append("data", data);
     	//不存在就添加
     	UpdateOptions updateOptions = new UpdateOptions();
     	updateOptions.upsert(true);
-		buySellDiskTab.updateOne(eq("_id", map.get("_id")), new Document("$set", document),updateOptions, new SingleResultCallback<UpdateResult>() {
+		ordersTab.updateOne(eq("_id", _id), new Document("$set", document),updateOptions, new SingleResultCallback<UpdateResult>() {
+			@Override
+			public void onResult(UpdateResult result, Throwable ex) {
+				if (ex!=null) {
+					System.out.println("mongoDb更新报错了:");
+					ex.printStackTrace();
+				}
+			}
+		});
+    }
+    public static void insertOrUpdateBuySellDiskTab(final String _id,final String data) {
+    	Document document=new Document();
+    	document.append("data", data);
+    	//不存在就添加
+    	UpdateOptions updateOptions = new UpdateOptions();
+    	updateOptions.upsert(true);
+		buySellDiskTab.updateOne(eq("_id", _id), new Document("$set", document),updateOptions, new SingleResultCallback<UpdateResult>() {
 			@Override
 			public void onResult(UpdateResult result, Throwable ex) {
 				if (ex!=null) {

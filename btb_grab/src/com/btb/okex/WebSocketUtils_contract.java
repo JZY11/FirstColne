@@ -27,6 +27,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.Market;
+import com.btb.entity.MarketOrder;
 import com.btb.entity.Thirdpartysupportmoney;
 import com.btb.okex.vo.MarketContractVo1;
 import com.btb.okex.vo.MarketDepthVo1;
@@ -122,14 +123,23 @@ public class WebSocketUtils_contract extends WebSocketClient {
 					market.setPlatformid(pid);
 					for (Object[] order : data) {
 						market.setClose(new BigDecimal(order[1].toString()));
+						MarketOrder marketOrder = new MarketOrder();
+						marketOrder.setPrice(market.getClose());//交易价格
+						marketOrder.setTs(Long.valueOf(order[3].toString()));//交易时间
+						marketOrder.setAmount(new BigDecimal(order[2].toString()));//交易量
 						if (order[4].equals("ask")) {
-							market.setSell(new BigDecimal(order[1].toString()));
+							market.setSell(new BigDecimal(order[1].toString()));//主动方
+							marketOrder.setType("sell");
 						}else {
-							market.setBuy(new BigDecimal(order[1].toString()));
+							market.setBuy(new BigDecimal(order[1].toString()));//主动方
+							marketOrder.setType("buy");
 						}
+						//添加订单数据
+						TaskUtil.putOrders(pid, market.getMoneytype(), market.getBuymoneytype(), marketOrder);
 					}
 					//添加或者更新行情数据
 					MongoDbUtil.insertOrUpdate(market);
+					
 				} catch (Exception e) {}
 			}
 		}else if (message.contains("_depth_")) {//深度
@@ -146,7 +156,8 @@ public class WebSocketUtils_contract extends WebSocketClient {
 			if (pid != null) {
 				MarketDepthVo1 marketDepthVo1 = JSON.parseArray(message, MarketDepthVo1.class).get(0);
 				String moneypair = marketDepthVo1.getChannel().replace("ok_sub_spot_", "").replace(endStr, "")+"_usd";
-				TaskUtil.sellBuyDisk.put(pid+"."+moneypair, marketDepthVo1.getData());
+				//TaskUtil.sellBuyDisk.put(pid+"."+moneypair, marketDepthVo1.getData());
+				TaskUtil.putBuySellDisk(pid, moneypair.split("_")[0], moneypair.split("_")[1], marketDepthVo1.getData());
 			}
 			
 		}
