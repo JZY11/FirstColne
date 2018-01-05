@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public class MarketDepth {
-	List<BigDecimal[]> bids;
-	List<BigDecimal[]> asks;
+	List<BigDecimal[]> bids;//[买1价,买1量]
+	List<BigDecimal[]> asks;//[卖1价,卖1量]
 	Long ts;
 	public List<BigDecimal[]> getBids() {
 		return bids;
