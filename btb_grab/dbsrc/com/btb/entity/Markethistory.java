@@ -168,8 +168,27 @@ public class Markethistory {
 	public String getTime_week() {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date(timeid*1000));
-		time_week=calendar.getWeekYear() +"-"+ calendar.getWeeksInWeekYear()+"week";
+		int weekInt = calendar.getWeeksInWeekYear();//解决周跨年问题
+		if (weekInt==52) {
+			int month = calendar.get(Calendar.MONTH)+1;
+			if (month==1) {//如果是下年1月,应该取上年的数据
+				time_week=(calendar.getWeekYear()-1) +"-"+ calendar.getWeeksInWeekYear()+"week";
+			}else {//如果是上年12月份,正常输出
+				time_week=calendar.getWeekYear() +"-"+ calendar.getWeeksInWeekYear()+"week";
+			}
+		}else {
+			time_week=calendar.getWeekYear() +"-"+ calendar.getWeeksInWeekYear()+"week";
+		}
 		return time_week;
+	}
+	public static void main(String[] args) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(new Date());
+		int weekInt = calendar.getWeeksInWeekYear();//解决周跨年问题
+		if (weekInt==52) {
+			int month = calendar.get(Calendar.MONTH)+1;
+			System.out.println(month);
+		}
 	}
 	public String getTime_month() {
 		time_month = DateUtil.dateFormat(new Date(timeid*1000), "yyyy-MM");

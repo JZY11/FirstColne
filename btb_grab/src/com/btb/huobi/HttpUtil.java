@@ -79,7 +79,7 @@ public class HttpUtil extends BaseHttp {
 				}
 				
 				for (MarketHistoryVo2 marketHistoryVo2:data) {
-					if (marketHistoryVo2.getId()<dbCurrentTime) {
+					if (marketHistoryVo2.getId()<=dbCurrentTime) {
 						continue;//如果小于数据库最大时间,说明数据库已经存在,不需要再添加
 					}else {
 						marketHistory.setTimeid(marketHistoryVo2.getId());//这里需要注意,long类型时间必须为10位的,msql数据库才支持
