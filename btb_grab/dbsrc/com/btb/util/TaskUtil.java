@@ -275,6 +275,7 @@ public class TaskUtil {
 	//采集订单的时候调用这个
 	public static void putOrders(String platformId,String moneytype,String buymoneytype,MarketOrder marketOrder) {
 		String _id = platformId+"."+moneytype+"_"+buymoneytype;
+		marketOrder.setPrice(StringUtil.ToRmb(marketOrder.getPrice(), platformId, buymoneytype));
 		MyList<MarketOrder> myList = orders.get(_id);
 		if (myList == null) {//不存在创建
 			myList = new MyList<>();
@@ -290,6 +291,13 @@ public class TaskUtil {
 	//采集订单的时候调用这个
 	public static void putBuySellDisk(String platformId,String moneytype,String buymoneytype,MarketDepth marketDepth) {
 		String _id = platformId+"."+moneytype+"_"+buymoneytype;
+		//价格转人民币
+		for (BigDecimal[] ask : marketDepth.getAsks()) {
+			ask[0]=StringUtil.ToRmb(ask[0], platformId, buymoneytype);
+		}
+		for (BigDecimal[] bid : marketDepth.getBids()) {
+			bid[0]=StringUtil.ToRmb(bid[0], platformId, buymoneytype);
+		}
 		MongoDbUtil.insertOrUpdateBuySellDiskTab(_id, JSON.toJSONString(marketDepth));
 	}
 		

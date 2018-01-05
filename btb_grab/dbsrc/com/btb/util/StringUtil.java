@@ -74,11 +74,11 @@ public class StringUtil {
 	 * @param usdMoney
 	 * @return
 	 */
-	public static BigDecimal ToRmb(BigDecimal usdMoney,String platformid,String moneytype) {
+	public static BigDecimal ToRmb(BigDecimal usdMoney,String platformid,String buymoneytype) {
 		if (usdMoney==null) {
 			return null;
 		}
-		if (platformid == null || moneytype == null) {
+		if (platformid == null || buymoneytype == null) {
 			try {
 				throw new Exception("平台id和交易币种类型,为空了");
 			} catch (Exception e) {
@@ -86,15 +86,15 @@ public class StringUtil {
 				e.printStackTrace();
 			}
 		}
-		BigDecimal bigDecimal = TaskUtil.buyMonetyTypeRate.get(platformid+"."+moneytype);
+		BigDecimal bigDecimal = TaskUtil.buyMonetyTypeRate.get(platformid+"."+buymoneytype);
 		if (bigDecimal != null) {
 			BigDecimal fabiToRmb = bigDecimal.multiply(usdMoney);
 			return fabiToRmb;
 		}else {
-			if (moneytype.equals("usdt")) {
-				moneytype="USD";
+			if (buymoneytype.equals("usdt")) {
+				buymoneytype="USD";
 			}
-			return fabiToRmb(usdMoney, moneytype);
+			return fabiToRmb(usdMoney, buymoneytype);
 		}
 	}
 	
