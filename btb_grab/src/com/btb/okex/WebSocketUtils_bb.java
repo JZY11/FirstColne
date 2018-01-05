@@ -68,7 +68,7 @@ public class WebSocketUtils_bb extends WebSocketClient {
 	//{改}
 	@Override
 	public void onMessage(String message) {
-		if (message.contains("_deals")) {//行情数据
+		if (message.contains("_deals") && !message.contains("addChannel")) {//行情数据
 			MarketVo1 marketVo1 = null;
 			try {
 				marketVo1 = JSON.parseArray(message, MarketVo1.class).get(0);
@@ -99,7 +99,7 @@ public class WebSocketUtils_bb extends WebSocketClient {
 				MongoDbUtil.insertOrUpdate(market);
 				
 			} catch (Exception e) {}
-		}else if (message.contains("_depth_10")) {
+		}else if (message.contains("_depth_10") && !message.contains("addChannel")) {
 			MarketDepthVo1 marketDepthVo1 = JSON.parseArray(message, MarketDepthVo1.class).get(0);
 			String moneypair = marketDepthVo1.getChannel().replace("ok_sub_spot_", "").replace("_depth_10", "");
 			//TaskUtil.sellBuyDisk.put(platformid+"."+moneypair, marketDepthVo1.getData());

@@ -98,7 +98,7 @@ public class WebSocketUtils_contract extends WebSocketClient {
 		String pid=null;
 		String startStr=null;
 		String endStr=null;
-		if (message.contains("_trade_")) {//行情
+		if (message.contains("_trade_") && !message.contains("addChannel")) {//行情
 			if (message.contains("_trade_this_week")) {//本周行情
 				pid=platformid_this_week;
 				endStr="_trade_this_week";
@@ -142,7 +142,7 @@ public class WebSocketUtils_contract extends WebSocketClient {
 					
 				} catch (Exception e) {}
 			}
-		}else if (message.contains("_depth_")) {//深度
+		}else if (message.contains("_depth_") && !message.contains("addChannel")) {//深度
 			if (message.contains("_depth_this_week_10")) {//本周深度
 				pid=platformid_this_week;
 				endStr="_depth_this_week_10";

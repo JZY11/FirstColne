@@ -89,7 +89,7 @@ public class WebSocketUtils extends WebSocketClient {
 					MarketDepth marketDepthVo = marketDepthVo1.getTick();
 					if (marketDepthVo != null && marketDepthVo.getAsks() != null) {
 						String[] strings = StringUtil.getHuobiBuyMoneytype(marketDepthVo1.getCh().split("\\.")[1]);
-						TaskUtil.putBuySellDisk(platformid, strings[0], strings[1], marketDepthVo);
+						TaskUtil.putBuySellDisk(platformid, strings[1], strings[0], marketDepthVo);
 					}
 				}else if (marketJsonStr.contains("trade.detail")) {
 					//实时行情数据
