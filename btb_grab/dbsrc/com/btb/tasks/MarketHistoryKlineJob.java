@@ -9,7 +9,6 @@ import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
-import com.btb.dao.MarketMapper;
 import com.btb.entity.Market;
 import com.btb.entity.Markethistory;
 import com.btb.entity.Tasklog;

@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.alibaba.fastjson.JSON;
-import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.QueryVo;
-import com.btb.entity.Thirdpartysupportmoney;
+import com.btb.entity.PlatformSupportmoney;
 import com.btb.util.BaseHttp;
 import com.btb.util.SpringUtil;
 import com.btb.util.TaskUtil;
+import com.btb.util.dao.BaseDaoSql;
 
 /**
  * 采集每个平台的交易对,每隔1小时执行一次
@@ -27,26 +27,25 @@ public class BuyParmeterThread extends Thread {
 		//根据平台id获取httpUtil对象
 		BaseHttp baseHttp = TaskUtil.httpBeans.get(platformId);
 		if (baseHttp != null) {
-			List<Thirdpartysupportmoney> thirdpartysupportmoneys = new ArrayList<>();
+			List<PlatformSupportmoney> thirdpartysupportmoneys = new ArrayList<>();
 			baseHttp.geThirdpartysupportmoneys(thirdpartysupportmoneys );
-			ThirdpartysupportmoneyMapper mapper = SpringUtil.getBean(ThirdpartysupportmoneyMapper.class);
 			
 			QueryVo vo = new QueryVo();
 			
 			vo.setPlatformid(platformId);
 			List<String> moneypairs = new ArrayList<>();
 			
-			for (Thirdpartysupportmoney thirdpartysupportmoney : thirdpartysupportmoneys) {
+			for (PlatformSupportmoney thirdpartysupportmoney : thirdpartysupportmoneys) {
 				moneypairs.add(thirdpartysupportmoney.getMoneypair());
-				int insertCount = mapper.updateByPrimaryKey(thirdpartysupportmoney);
+				int insertCount = BaseDaoSql.update(thirdpartysupportmoney);
 				if (insertCount != 1) {
-					mapper.insert(thirdpartysupportmoney);
+					BaseDaoSql.save(thirdpartysupportmoney);
 				}
 			}
 			vo.setMoneypairs(moneypairs);
 			//删除不存在的
 			if (moneypairs != null && !moneypairs.isEmpty()) {
-				mapper.deleteParam(vo);
+				BaseDaoSql.excByMybatis("deleteParam", vo);
 				//重新加载数据
 				TaskUtil.moneyPairs.put(platformId, thirdpartysupportmoneys);
 			}

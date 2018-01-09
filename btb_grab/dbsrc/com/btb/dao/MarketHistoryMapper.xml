@@ -18,6 +18,36 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		from markethistory GROUP BY id order by timeid desc
 	</select>
 	
+	<select id="selectPlateformid" resultType="string">
+		select DISTINCT platformid from thirdpartysupportmoney
+	</select>
 	
+	<update id="createtable_markethistory_1min" parameterType="string">
+		CREATE TABLE `${value}_markethistory_1min` (
+		  `id` varchar(255) NOT NULL,
+		  `moneypair` varchar(255) NOT NULL,
+		  `timeid` bigint(20) NOT NULL,
+		  `buymoneytype` varchar(255) DEFAULT NULL,
+		  `moneytype` varchar(255) DEFAULT NULL,
+		  `open` decimal(28,8) DEFAULT NULL,
+		  `openrmb` decimal(28,8) DEFAULT NULL,
+		  `close` decimal(28,8) DEFAULT NULL,
+		  `closermb` decimal(28,8) DEFAULT NULL,
+		  `low` decimal(28,8) DEFAULT NULL,
+		  `lowrmb` decimal(28,8) DEFAULT NULL,
+		  `high` decimal(28,8) DEFAULT NULL,
+		  `highrmb` decimal(28,8) DEFAULT NULL,
+		  `vol` decimal(28,8) DEFAULT NULL,
+		  `volrmb` decimal(28,8) DEFAULT NULL,
+		  `count` decimal(28,8) DEFAULT NULL,
+		  `amount` decimal(28,8) DEFAULT NULL,
+		  `time_min` varchar(255) DEFAULT '',
+		  `time_hour` varchar(255) DEFAULT NULL,
+		  `time_day` varchar(255) DEFAULT NULL,
+		  `time_week` varchar(255) DEFAULT NULL,
+		  `time_month` varchar(255) DEFAULT NULL,
+		  PRIMARY KEY (`id`,`timeid`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8
+	</update>
 	
 </mapper>

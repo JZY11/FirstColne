@@ -23,21 +23,13 @@ import org.jsoup.select.Elements;
 import org.xml.sax.SAXException;
 
 import com.alibaba.fastjson.JSON;
-import com.btb.dao.BitbinfoMapper;
-import com.btb.dao.BuyMoneyTypeRateMapper;
-import com.btb.dao.MarketHistoryMapper;
-import com.btb.dao.MarketMapper;
-import com.btb.dao.RateMapper;
-import com.btb.dao.ThirdpartyplatforminfoMpper;
-import com.btb.dao.ThirdpartysupportmoneyMapper;
-import com.btb.dao.TodayOpenMoneyMapper;
 import com.btb.entity.Bitbinfo;
 import com.btb.entity.BuyMoneyTypeRate;
 import com.btb.entity.MarketDepth;
 import com.btb.entity.MarketOrder;
 import com.btb.entity.Rate;
-import com.btb.entity.Thirdpartyplatforminfo;
-import com.btb.entity.Thirdpartysupportmoney;
+import com.btb.entity.PlatformInfo;
+import com.btb.entity.PlatformSupportmoney;
 import com.btb.entity.TodayOpenMoney;
 import com.btb.tasks.BitbCountJob;
 import com.btb.tasks.BuyParmeterJob;
@@ -49,6 +41,7 @@ import com.btb.tasks.RateJob;
 import com.btb.tasks.service.JobManager;
 import com.btb.tasks.threads.BuyParmeterThread;
 import com.btb.tasks.threads.MarketHistoryKlineTread;
+import com.btb.util.dao.BaseDaoSql;
 import com.btb.util.thread.ThreadPoolManager;
 
 public class TaskUtil {
@@ -57,7 +50,7 @@ public class TaskUtil {
 	//http, <平台id,采集类>
 	public static Map<String,BaseHttp> httpBeans=new HashMap<>();
 	//交易对<平台id,交易对集合>
-	public static Map<String,List<Thirdpartysupportmoney>> moneyPairs=new HashMap<>();
+	public static Map<String,List<PlatformSupportmoney>> moneyPairs=new HashMap<>();
 	//每个平台的websocketClient链接
 	public static Map<String, WebSocketClient> webSocketClientMap = new HashMap<>();
 	//每个交易对,今日开盘价格Map<平台id.交易对,最新价格>
@@ -150,8 +143,7 @@ public class TaskUtil {
 	//每隔1小时获取一次,比特币的数量
 	public static void getBitbCount() {
 		//比特币流通量
-		BitbinfoMapper bitbinfoMapper = SpringUtil.getBean(BitbinfoMapper.class);
-		List<Bitbinfo> selectAll2 = bitbinfoMapper.selectAll();
+		List<Bitbinfo> selectAll2 = BaseDaoSql.findAll(Bitbinfo.class);
 		for (Bitbinfo bitbInfo : selectAll2) {
 			//放到集合里面
 			if (bitbInfo.getCurrentcount() != null) {
@@ -184,8 +176,7 @@ public class TaskUtil {
 	//从db里面加载所有交易对
 	public static void initMoneypairByDB() {
 		for (String platformid : platformids) {
-			ThirdpartysupportmoneyMapper thirdpartysupportmoneyMapper=SpringUtil.getBean(ThirdpartysupportmoneyMapper.class);
-			List<Thirdpartysupportmoney> findmoneypairByplatformid = thirdpartysupportmoneyMapper.findmoneypairByplatformid(platformid);
+			List<PlatformSupportmoney> findmoneypairByplatformid = BaseDaoSql.selectOne("findmoneypairByplatformid", platformid);
 			TaskUtil.moneyPairs.put(platformid, findmoneypairByplatformid);
 		}
  	}
@@ -195,8 +186,7 @@ public class TaskUtil {
 	 * 从数据库里面获取外汇数据防止不能使用
 	 */
 	public static void initWaiHuiToDB() {
-		RateMapper rateMapper = SpringUtil.getBean(RateMapper.class);
-		List<Rate> selectAll = rateMapper.selectAll();
+		List<Rate> selectAll = BaseDaoSql.findAll(Rate.class);
 		for (Rate rate : selectAll) {
 			if (rate.getRate() != null) {
 				TaskUtil.rateMap.put(rate.getMoneycode(), rate.getRate());
@@ -208,7 +198,7 @@ public class TaskUtil {
 	
 	//加载k线图数据
 	public static void initKline(Boolean isTask) {
-		Map<String, List<Thirdpartysupportmoney>> moneyPairsMap = TaskUtil.moneyPairs;
+		Map<String, List<PlatformSupportmoney>> moneyPairsMap = TaskUtil.moneyPairs;
 		for (String platformid : moneyPairsMap.keySet()) {
 			MarketHistoryKlineTread marketHistoryKlineTread = new MarketHistoryKlineTread(platformid);
 			if (isTask) {
@@ -222,11 +212,10 @@ public class TaskUtil {
 	//加载数据库今日开盘价格
 	public static void initTodayOpen() {
 		//今日开盘价格
-		TodayOpenMoneyMapper todayOpenMoneyMapper = SpringUtil.getBean(TodayOpenMoneyMapper.class);
 		for (String platformid : platformids) {
 			TodayOpenMoney todayOpenMoney = new TodayOpenMoney();
 			todayOpenMoney.setPlatformid(platformid);
-			List<TodayOpenMoney> list = todayOpenMoneyMapper.select(todayOpenMoney);
+			List<TodayOpenMoney> list = BaseDaoSql.findList("select * from todayopenmoney where platformid = '"+platformid+"'", TodayOpenMoney.class);
 			for (TodayOpenMoney todayOpenMoney2 : list) {
 				todayOpen.put(todayOpenMoney2.getId(), todayOpenMoney2.getOpen());
 			}
@@ -238,8 +227,7 @@ public class TaskUtil {
 	//启动加载每个平台的btc,eth价格, 每1.5分钟执行一次
 	public static void initBuyMonetyTypeRate() {
 		//加载每个平台所有buymoneytype的人民币价格汇率
-		BuyMoneyTypeRateMapper buyMoneyTypeRateMapper = SpringUtil.getBean(BuyMoneyTypeRateMapper.class);
-		List<BuyMoneyTypeRate> selectAll3 = buyMoneyTypeRateMapper.selectAll();
+		List<BuyMoneyTypeRate> selectAll3 = BaseDaoSql.findAll(BuyMoneyTypeRate.class);
 		for (BuyMoneyTypeRate buyMoneyTypeRate1 : selectAll3) {
 			buyMonetyTypeRate.put(buyMoneyTypeRate1.getId(), buyMoneyTypeRate1.getClosermb());
 		}

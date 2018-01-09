@@ -17,7 +17,7 @@ public class ThreadPoolManager {
 	static{
 		threadExecutor=new ThreadPoolExecutor(
 				100,//最小线程数
-				5000,//最大线程数
+				10000,//最大线程数
 				120,//线程多长时间不用就失效
 				TimeUnit.SECONDS,//失效时间按分钟计算
 				new LinkedBlockingQueue<Runnable>(10000),//超出5000个线程后,指定等待执行的任务数量

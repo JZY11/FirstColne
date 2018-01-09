@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import com.btb.dao.UserMapper;
 import com.btb.entity.User;
 import com.btb.util.SpringUtil;
 import com.mongodb.Block;

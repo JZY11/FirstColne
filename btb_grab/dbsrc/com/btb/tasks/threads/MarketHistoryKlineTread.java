@@ -2,12 +2,12 @@ package com.btb.tasks.threads;
 
 import java.util.List;
 
-import com.btb.dao.MarketHistoryMapper;
 import com.btb.entity.Markethistory;
-import com.btb.entity.Thirdpartysupportmoney;
+import com.btb.entity.PlatformSupportmoney;
 import com.btb.util.BaseHttp;
 import com.btb.util.SpringUtil;
 import com.btb.util.TaskUtil;
+import com.btb.util.dao.BaseDaoSql;
 
 public class MarketHistoryKlineTread extends Thread {
 	String platformid;
@@ -18,17 +18,16 @@ public class MarketHistoryKlineTread extends Thread {
 	@Override
 	public void run() {
 		
-		MarketHistoryMapper marketHistoryMapper = SpringUtil.getBean(MarketHistoryMapper.class);
-		List<Thirdpartysupportmoney> moneyPairs = TaskUtil.moneyPairs.get(platformid);
+		List<PlatformSupportmoney> moneyPairs = TaskUtil.moneyPairs.get(platformid);
 		
-		for (Thirdpartysupportmoney thirdpartysupportmoney : moneyPairs) {
+		for (PlatformSupportmoney thirdpartysupportmoney : moneyPairs) {
 			Markethistory marketHistory = new Markethistory();
 			marketHistory.setPlatformid(platformid);
 			marketHistory.setMoneypair(thirdpartysupportmoney.getMoneypair());
 			marketHistory.setMoneytype(thirdpartysupportmoney.getMoneytype());
 			marketHistory.setBuymoneytype(thirdpartysupportmoney.getBuymoneytype());
 			long currentTime = System.currentTimeMillis()/1000;//换算成秒级
-			Long dbCurrentTime=marketHistoryMapper.getMaxTimeId(marketHistory);
+			Long dbCurrentTime=BaseDaoSql.selectOne("getMaxTimeId", marketHistory);
 			if (dbCurrentTime == null) {//如果第一次获取数据,直接过去一天数据
 				dbCurrentTime=currentTime-24*60*60;
 			}
@@ -38,7 +37,7 @@ public class MarketHistoryKlineTread extends Thread {
 			}
 			if (size != 0) {
 				BaseHttp baseHttp = TaskUtil.httpBeans.get(marketHistory.getPlatformid());
-				baseHttp.getKLineData(marketHistory, marketHistoryMapper, size, dbCurrentTime);
+				baseHttp.getKLineData(marketHistory, size, dbCurrentTime);
 			}
 		}
 	}

@@ -198,7 +198,26 @@ public class StringUtil {
 		return jiaoyidui;
 	}
 	
+	public static BigDecimal toBigDecimal(Object object) {
+		if (object == null) {
+			return new BigDecimal("0");
+		}else {
+			if (object.toString().contains("E")) {
+				System.out.println("d");
+			}
+			String string = object.toString().replaceAll("[^0-9a-zA-Z-+.]","");
+			if (StringUtil.hashText(string)) {
+				if (string.split("\\.").length>2) {//点的数量也不能大于1个
+					string = string.replaceFirst("\\.", "#").replaceAll("\\.", "").replace("#", ".");
+				}
+				return new BigDecimal(string).setScale(8, RoundingMode.HALF_UP);
+			}else {
+				return new BigDecimal("0");
+			}
+		}
+	}
+	
 	public static void main(String[] args) {
-		System.out.println(getAllWebSocketUtils());
+		System.out.println(toBigDecimal("-sk-1djf7-de-987.1.2.37iuisdf"));
 	}
 }

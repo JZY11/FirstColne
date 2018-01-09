@@ -27,15 +27,14 @@
 		<property name="password" value="${jdbc.password}"/>
 		<property name="defaultAutoCommit" value="true"/>
 	</bean>
-	
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
 	<!-- 配置会话工厂 -->
 	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
 		<!-- 数据库连接池 -->
 		<property name="dataSource" ref="dataSource"/>
-	</bean>
-	<!-- 配置Mapper扫描器 -->
-	<bean class="tk.mybatis.spring.mapper.MapperScannerConfigurer">
-		<property name="basePackage" value="com.btb.dao"/>
+		<property name="mapperLocations" value="classpath*:com/btb/dao/*.xml"></property> 
 	</bean>
     
     <!-- 扫描带Controller注解的类 -->

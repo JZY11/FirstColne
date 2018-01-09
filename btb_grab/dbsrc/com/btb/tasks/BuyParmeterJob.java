@@ -13,12 +13,10 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.SchedulerException;
 
-import com.btb.dao.ThirdpartyplatforminfoMpper;
-import com.btb.dao.ThirdpartysupportmoneyMapper;
 import com.btb.entity.QueryVo;
 import com.btb.entity.Tasklog;
-import com.btb.entity.Thirdpartyplatforminfo;
-import com.btb.entity.Thirdpartysupportmoney;
+import com.btb.entity.PlatformInfo;
+import com.btb.entity.PlatformSupportmoney;
 import com.btb.tasks.service.BaseJob;
 import com.btb.tasks.service.JobManager;
 import com.btb.tasks.threads.BuyParmeterThread;

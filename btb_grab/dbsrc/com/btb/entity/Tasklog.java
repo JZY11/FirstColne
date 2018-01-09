@@ -1,14 +1,13 @@
 package com.btb.entity;
 
-import com.btb.dao.TasklogMapper;
 import com.btb.util.DateUtil;
 import com.btb.util.SpringUtil;
+import com.btb.util.dao.BaseDaoSql;
 
 public class Tasklog {
 	
 	public static void save(Tasklog tasklog) {
-		TasklogMapper tasklogMapper = SpringUtil.getBean(TasklogMapper.class);
-		tasklogMapper.insert(tasklog);
+		BaseDaoSql.save(tasklog);
 	}
 	
 	String name;

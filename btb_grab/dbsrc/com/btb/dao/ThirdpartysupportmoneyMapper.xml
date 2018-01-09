@@ -4,23 +4,27 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.btb.dao.ThirdpartysupportmoneyMapper">
 	<delete id="deleteParam" parameterType="com.btb.entity.QueryVo">
-		delete from thirdpartysupportmoney where platformid = #{platformid}
+		delete from PlatformSupportmoney where platformid = #{platformid}
 		<foreach collection="moneypairs" item="moneypair" close=")" open="and moneypair not in (" separator=",">
 			#{moneypair}
 		</foreach>
 	</delete>
 	
 	<select id="findplatformidAll" resultType="map">
-		select distinct platformid from thirdpartysupportmoney
+		select distinct platformid from PlatformSupportmoney
 	</select>
 	
-	<select id="findmoneypairByplatformid" parameterType="string" resultType="com.btb.entity.Thirdpartysupportmoney">
-		select * from thirdpartysupportmoney where platformid = #{platformid}
+	<select id="findmoneypairByplatformid" parameterType="string" resultType="com.btb.entity.PlatformSupportmoney">
+		select * from PlatformSupportmoney where platformid = #{platformid} and ishave is NULL 
 	</select>
+	
+	<update id="updateNoHaveDate" parameterType="com.btb.entity.PlatformSupportmoney">
+		update PlatformSupportmoney set ishave = 0 where platformid = #{platformid} and moneytype = #{moneytype} and buymoneytype = #{buymoneytype}
+	</update>
 	
 	<!-- 每次采集后,将采集的新比特币,添加到bitb信息表里面 -->
 	<insert id="insertIntoBitbInfo">
-		insert into bitbinfo(bitbcode) select DISTINCT moneytype from thirdpartysupportmoney  where moneytype not in (SELECT DISTINCT bitbcode from bitbinfo)
+		insert into bitbinfo(bitbcode) select DISTINCT moneytype from PlatformSupportmoney  where moneytype not in (SELECT DISTINCT bitbcode from bitbinfo)
 	</insert>
 	
 </mapper>
