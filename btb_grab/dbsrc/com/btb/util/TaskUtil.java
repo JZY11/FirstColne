@@ -64,13 +64,6 @@ public class TaskUtil {
 	public static Map<String, BigDecimal> bitbCountMap = new HashMap<>();
 	//手动填写,所有平台的id集合
 	public static Set<String> platformids=new HashSet<>();
-	static{
-		//从config.properties里面读取 平台id
-		String[] string = MyConfig.get("platformids").split(",");
-		for (String string2 : string) {
-			platformids.add(string2);
-		}
-	}
 	public static void main(String[] args) {
 		initStartAll();
 		taskList();
@@ -171,12 +164,15 @@ public class TaskUtil {
 		Map<String, BaseHttp> beanHttpMap = SpringUtil.context.getBeansOfType(BaseHttp.class);
 		for (BaseHttp baseHttp : beanHttpMap.values()) {
 			TaskUtil.httpBeans.put(baseHttp.getPlatformId(), baseHttp);
+			for (BaseHttp baseHttp2 : TaskUtil.httpBeans.values()) {
+				platformids.add(baseHttp2.getPlatformId());
+			}
 		}
 	}
 	//从db里面加载所有交易对
 	public static void initMoneypairByDB() {
 		for (String platformid : platformids) {
-			List<PlatformSupportmoney> findmoneypairByplatformid = BaseDaoSql.selectOne("findmoneypairByplatformid", platformid);
+			List<PlatformSupportmoney> findmoneypairByplatformid = BaseDaoSql.selectList("findmoneypairByplatformid", platformid);
 			TaskUtil.moneyPairs.put(platformid, findmoneypairByplatformid);
 		}
  	}

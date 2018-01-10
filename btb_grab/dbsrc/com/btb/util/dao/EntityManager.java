@@ -94,24 +94,28 @@ public class EntityManager {
 		String columstring="";
 		String noargs="";
 		List<Object> args=new ArrayList<Object>();
-		
+		Map<String, Method> methodMap = new HashMap<>();
+		for (Method method : baseEntity.getClass().getMethods()) {
+			if (method.getName().startsWith("get")) {
+				methodMap.put(method.getName().replaceFirst("get", "").toLowerCase(), method);
+			}
+		}
 		for (String attrName : thiscolumnMap.keySet()) {
 			Field field=null;
 			Object value=null;
 			try {
-				field = baseEntity.getClass().getDeclaredField(attrName);
-				field.setAccessible(true);
-				value=field.get(baseEntity);
-			} catch (NoSuchFieldException | SecurityException e) {
+				if (methodMap.keySet().contains(attrName.toLowerCase())) {//判断是否拥有get方法
+					Method method = methodMap.get(attrName.toLowerCase());
+					value = method.invoke(baseEntity);
+				}else {
+					field = baseEntity.getClass().getDeclaredField(attrName);
+					field.setAccessible(true);
+					value=field.get(baseEntity);
+				}
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			} 
 			if (attrName.equals(idAttrName) && idgeneratedtype != null) {
 				if (StringUtil.hashText(value)) {
 					columstring+=thiscolumnMap.get(attrName)+",";
@@ -321,31 +325,39 @@ public class EntityManager {
 		String idcolumnName="";
 		Object idValue="";
 		List<Object> objects=new ArrayList<Object>();
+		Map<String, Method> methodMap = new HashMap<>();
+		for (Method method : entity.getClass().getMethods()) {
+			if (method.getName().startsWith("get")) {
+				methodMap.put(method.getName().replaceFirst("get", "").toLowerCase(), method);
+			}
+		}
 		for (String attrName : thiscolumnMap.keySet()) {
 			if(attrName.equals(idattrname)){
 				idcolumnName=thiscolumnMap.get(attrName);
 				try {
-					Field field = entity.getClass().getDeclaredField(attrName);
-					field.setAccessible(true);
-					idValue=field.get(entity);
-				} catch (NoSuchFieldException e) {
+					if (methodMap.keySet().contains(attrName.toLowerCase())) {//判断是否拥有get方法
+						Method method = methodMap.get(attrName.toLowerCase());
+						idValue = method.invoke(entity);
+					}else {
+						Field field = entity.getClass().getDeclaredField(attrName);
+						field.setAccessible(true);
+						idValue=field.get(entity);
+					}
+				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				} catch (SecurityException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IllegalArgumentException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IllegalAccessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				} 
 			}else {
 				try {
-					Field field=entity.getClass().getDeclaredField(attrName);
-					field.setAccessible(true);
-					Object value=field.get(entity);
+					Object value=null;
+					if (methodMap.keySet().contains(attrName.toLowerCase())) {//判断是否拥有get方法
+						Method method = methodMap.get(attrName.toLowerCase());
+						value = method.invoke(entity);
+					}else {
+						Field field=entity.getClass().getDeclaredField(attrName);
+						field.setAccessible(true);
+						value=field.get(entity);
+					}
 					if (value!=null) {
 						if (value.equals("")) {
 							objects.add(null);
@@ -354,19 +366,10 @@ public class EntityManager {
 						}
 						columstring+=thiscolumnMap.get(attrName)+"=?,";
 					}
-				} catch (IllegalArgumentException e) {
+				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				} catch (IllegalAccessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (NoSuchFieldException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (SecurityException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				} 
 			}
 			
 		}

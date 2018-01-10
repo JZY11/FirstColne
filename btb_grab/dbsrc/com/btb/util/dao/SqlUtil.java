@@ -1,5 +1,6 @@
 package com.btb.util.dao;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import com.btb.util.DateUtil;
@@ -55,7 +56,9 @@ public class SqlUtil {
 				return t.cast(DateUtil.dateFormatForSql(String.valueOf(object)));
 			}else if(Timestamp.class.getName().equals(t.getName()) && StringUtil.hashText(object)){
 				return t.cast(DateUtil.timestampFormatForSql(String.valueOf(object)));
-			}else {
+			}else if (BigDecimal.class.getName().equals(t.getName()) && StringUtil.hashText(object)) {
+				return t.cast(StringUtil.toBigDecimal(object));
+			}else{
 				return null;
 			}
 		}

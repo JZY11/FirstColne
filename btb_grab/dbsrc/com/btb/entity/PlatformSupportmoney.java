@@ -13,8 +13,8 @@ import tk.mybatis.mapper.code.Style;
 @NameStyle(Style.normal)
 public class PlatformSupportmoney {
 	@Id
+	String id;
 	String platformid;//平台id
-	@Id
 	String moneypair;//交易对比如btcuatf
 	String moneytype;//购买的币种比如btcuatf,应该是btc
 	String buymoneytype;//使用的币种比如btcuatf,应该是uatf
@@ -26,6 +26,13 @@ public class PlatformSupportmoney {
 	String moneypairurl;//moneypairurl,交易对的url,跳转到平台的官网查看某个交易对信息
 	
 	
+	public String getId() {
+		id=getPlatformid()+"."+getMoneytype()+"_"+getBuymoneytype();
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
 	public String getMoneypairurl() {
 		return moneypairurl;
 	}
@@ -78,12 +85,18 @@ public class PlatformSupportmoney {
 		this.moneypair = moneypair;
 	}
 	public String getMoneytype() {
+		if (moneytype != null) {
+			moneytype=moneytype.toUpperCase();
+		}
 		return moneytype;
 	}
 	public void setMoneytype(String moneytype) {
 		this.moneytype = moneytype;
 	}
 	public String getBuymoneytype() {
+		if (buymoneytype!=null) {
+			buymoneytype=buymoneytype.toUpperCase();
+		}
 		return buymoneytype;
 	}
 	public void setBuymoneytype(String buymoneytype) {
