@@ -16,7 +16,7 @@ public class ThreadPoolManager {
 	
 	static{
 		threadExecutor=new ThreadPoolExecutor(
-				100,//最小线程数
+				10,//最小线程数
 				10000,//最大线程数
 				120,//线程多长时间不用就失效
 				TimeUnit.SECONDS,//失效时间按分钟计算

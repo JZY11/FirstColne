@@ -272,14 +272,45 @@ public class Test1 {
 	
 	//https://graphs.coinmarketcap.com/currencies/bitcoin/1367174841000/1489400827013/
 	@Test
-	public void allplatformCaiji() throws Exception {
+	public void allplatformCaiji(){
 		List<Map<String, Object>> list = BaseDaoSql.findListMaps("SELECT ccid,bitbcode from bitbinfo where percent_change_1h is not null");
 		for (Map<String, Object> map : list) {
-			TestThread testThread = new TestThread(map);
-			ThreadPoolManager.workNoResult(testThread);
+			AllPlatformKline aPlatformKline = new AllPlatformKline();
+			aPlatformKline.setBitbcode(map.get("bitbcode").toString());
+			aPlatformKline.setBitbname(map.get("ccid").toString());
+			while (true) {
+				String result = BaseDaoSql.findSingleResult("select min(timeid) from allplatformkline where bitbname = '"+aPlatformKline.getBitbname()+"'");
+				long end = new Date().getTime();
+				long start = DateUtil.dateMath(new Date(), DateUtil.Date, -1).getTime();
+				if (StringUtil.hashText(result)) {//如果不为空
+					end = Long.valueOf(result)-1;
+					start=DateUtil.dateMath(new Date(end), DateUtil.Date, -1).getTime();
+				}
+				String url = "https://graphs.coinmarketcap.com/currencies/"+aPlatformKline.getBitbname()+"/"+start+"/"+end+"/";
+				System.out.println(url);
+				try {
+					String string = JsoupUtil.getJson(url);
+					Map map2 = JSON.parseObject(string, Map.class);
+					List<List<Object>> object = (List<List<Object>>)map2.get("market_cap_by_available_supply");
+					List<List<Object>> object2 = (List<List<Object>>)map2.get("price_btc");
+					List<List<Object>> object3 = (List<List<Object>>)map2.get("price_usd");
+					List<List<Object>> object4 = (List<List<Object>>)map2.get("volume_usd");
+					if (!string.equals("error") && object.isEmpty()) {//如果没有数据了
+						break;
+					}
+					for (int i=0;i<object.size();i++) {
+						aPlatformKline.setTimeid(Long.valueOf(StringUtil.valueOf(object.get(i).get(0))));
+						aPlatformKline.setCapSuppy(StringUtil.toBigDecimal(object.get(i).get(1)));
+						aPlatformKline.setPrice_btc(StringUtil.toBigDecimal(object2.get(i).get(1)));
+						aPlatformKline.setPrice_usd(StringUtil.toBigDecimal(object3.get(i).get(1)));
+						aPlatformKline.setVol_usd(StringUtil.toBigDecimal(object4.get(i).get(1)));
+						BaseDaoSql.save(aPlatformKline);
+					}
+				} catch (Exception e) {
+				}
+				
+			}
 		}
-		
-		
 	}
 	
 	public static void main(String[] args) {
