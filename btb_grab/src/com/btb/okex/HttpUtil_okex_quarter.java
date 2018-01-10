@@ -38,7 +38,7 @@ public class HttpUtil_okex_quarter extends BaseHttp {
 	
 	public String getPlatformId() {
 		//@2 必须跟数据库的平台id一致
-		return "okex_quarter";
+		return "OKEx_quarter";
 	}
 	
 	/**

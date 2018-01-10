@@ -37,9 +37,9 @@ public class WebSocketUtils_contract extends WebSocketClient {
 	private static final String url = "wss://real.okex.com:10440/websocket/okexapi";
 	
 	private static WebSocketUtils_contract chatclient = null;
-	private static String platformid_this_week="okex_this_week";
-	private static String platformid_next_week="okex_next_week";
-	private static String platformid_okex_quarter="okex_quarter";
+	private static String platformid_this_week="OKEx_this_week";
+	private static String platformid_next_week="OKEx_next_week";
+	private static String platformid_okex_quarter="OKEx_quarter";
 	public WebSocketUtils_contract(URI serverUri, Map<String, String> headers, int connecttimeout) {
 		super(serverUri, new Draft_17(), headers, connecttimeout);
 	}
@@ -55,26 +55,14 @@ public class WebSocketUtils_contract extends WebSocketClient {
 			String chId = "ok_sub_futureusd_"+moneyType+"_trade_this_week";
 			subModel.setChannel(chId);
 			chatclient.send(JSON.toJSONString(subModel));
-			//本周合约深度订阅
-			chId="ok_sub_futureusd_"+moneyType+"_depth_this_week_10";
-			subModel.setChannel(chId);
-			chatclient.send(JSON.toJSONString(subModel));
 			
 			//下周合约行情订阅
 			chId = "ok_sub_futureusd_"+moneyType+"_trade_next_week";
 			subModel.setChannel(chId);
 			chatclient.send(JSON.toJSONString(subModel));
-			//下周合约深度订阅
-			chId="ok_sub_futureusd_"+moneyType+"_depth_next_week_10";
-			subModel.setChannel(chId);
-			chatclient.send(JSON.toJSONString(subModel));
 			
 			//本季度合约行情订阅
 			chId = "ok_sub_futureusd_"+moneyType+"_trade_quarter";
-			subModel.setChannel(chId);
-			chatclient.send(JSON.toJSONString(subModel));
-			//本季度合约深度订阅
-			chId="ok_sub_futureusd_"+moneyType+"_depth_quarter_10";
 			subModel.setChannel(chId);
 			chatclient.send(JSON.toJSONString(subModel));
 		}
@@ -137,26 +125,7 @@ public class WebSocketUtils_contract extends WebSocketClient {
 					
 				} catch (Exception e) {}
 			}
-		}else if (message.contains("_depth_") && !message.contains("addChannel")) {//深度
-			if (message.contains("_depth_this_week_10")) {//本周深度
-				pid=platformid_this_week;
-				endStr="_depth_this_week_10";
-			}else if (message.contains("_depth_next_week_10")) {//下周深度
-				pid=platformid_next_week;
-				endStr="_depth_next_week_10";
-			}else if (message.contains("_depth_quarter_10")) {//本季度深度
-				pid=platformid_okex_quarter;
-				endStr="_depth_quarter_10";
-			}
-			if (pid != null) {
-				MarketDepthVo1 marketDepthVo1 = JSON.parseArray(message, MarketDepthVo1.class).get(0);
-				String moneypair = marketDepthVo1.getChannel().replace("ok_sub_futureusd_", "").replace(endStr, "")+"_usd";
-				//TaskUtil.sellBuyDisk.put(pid+"."+moneypair, marketDepthVo1.getData());
-				TaskUtil.putBuySellDisk(pid, moneypair.split("_")[0], moneypair.split("_")[1], marketDepthVo1.getData());
-			}
-			
 		}
-		
 	}
 	
 	@Override

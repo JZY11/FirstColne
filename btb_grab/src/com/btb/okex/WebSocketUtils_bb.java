@@ -51,12 +51,7 @@ public class WebSocketUtils_bb extends WebSocketClient {
 			subModel.setChannel(chId);
 			chatclient.send(JSON.toJSONString(subModel));
 			
-			//添加买卖盘行情订阅
-			chId="ok_sub_spot_"+PlatformSupportmoney.getMoneypair()+"_depth_10";
-			subModel.setChannel(chId);
-			chatclient.send(JSON.toJSONString(subModel));
 		}
-		
 		
 	}
 	//需要改这里或者另外一个OnMessage重载方法{改}
@@ -80,30 +75,17 @@ public class WebSocketUtils_bb extends WebSocketClient {
 				market.setBuymoneytype(split[1]);
 				market.setPlatformid(platformid);
 				for (Object[] order : data) {
-					MarketOrder marketOrder = new MarketOrder();
 					market.setClose(new BigDecimal(order[1].toString()));
 					if (order[4].equals("ask")) {
 						market.setSell(new BigDecimal(order[1].toString()));
-						marketOrder.setType("sell");
 					}else {
 						market.setBuy(new BigDecimal(order[1].toString()));
-						marketOrder.setType("buy");
 					}
-					//添加订单数据
-					marketOrder.setPrice(market.getClose());//交易价格
-					marketOrder.setTs(Long.valueOf(order[3].toString()));//交易时间
-					marketOrder.setAmount(new BigDecimal(order[2].toString()));//交易量
-					TaskUtil.putOrders(platformid, market.getMoneytype(), market.getBuymoneytype(), marketOrder);
 				}
 				//添加或者更新行情数据
 				MongoDbUtil.insertOrUpdate(market);
 				
 			} catch (Exception e) {}
-		}else if (message.contains("_depth_10") && !message.contains("addChannel")) {
-			MarketDepthVo1 marketDepthVo1 = JSON.parseArray(message, MarketDepthVo1.class).get(0);
-			String moneypair = marketDepthVo1.getChannel().replace("ok_sub_spot_", "").replace("_depth_10", "");
-			//TaskUtil.sellBuyDisk.put(platformid+"."+moneypair, marketDepthVo1.getData());
-			TaskUtil.putBuySellDisk(platformid, moneypair.split("_")[0], moneypair.split("_")[1], marketDepthVo1.getData());
 		}
 	}
 	
