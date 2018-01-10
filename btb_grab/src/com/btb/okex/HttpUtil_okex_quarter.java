@@ -105,23 +105,8 @@ public class HttpUtil_okex_quarter extends BaseHttp {
 		}
 	}
 	public static void main(String[] args) {
-		
-		SpringUtil.testinitSpring();
-		//CacheData.httpBeans.get("100000000");
-		
-		HttpUtil_okex_quarter httpUtil = new HttpUtil_okex_quarter();
-		
-		Markethistory marketHistory=new Markethistory();
-		marketHistory.setPlatformid(httpUtil.getPlatformId());
-		marketHistory.setMoneypair("btc_usd");
-		marketHistory.setMoneytype("btc");
-		marketHistory.setBuymoneytype("usd");
-		httpUtil.getKLineData(marketHistory, 10L, 1514288760L);
-		 
-		
-		/*List<Thirdpartysupportmoney> thirdpartysupportmoneys = new ArrayList<>();
-		new HttpUtil_okex_quarter().geThirdpartysupportmoneys(thirdpartysupportmoneys);*/
-		
+		BaseHttp.testLoadMoneyPair(HttpUtil_okex_quarter.class);
+		BaseHttp.testLoadKline(HttpUtil_okex_quarter.class);
 	}
 	
 }

@@ -38,7 +38,7 @@ public class HttpUtil_okex_next_week extends BaseHttp {
 	
 	public String getPlatformId() {
 		//@2 必须跟数据库的平台id一致
-		return "okex_next_week";
+		return "OKEx_next_week";
 	}
 	
 	/**
@@ -106,18 +106,8 @@ public class HttpUtil_okex_next_week extends BaseHttp {
 		}
 	}
 	public static void main(String[] args) {
-		/*
-		SpringUtil.testinitSpring();
-		//CacheData.httpBeans.get("100000000");
-		
-		HttpUtil httpUtil = new HttpUtil();
-		
-		Markethistory marketHistory=new Markethistory();
-		marketHistory.setPlatformid(httpUtil.getPlatformId());
-		marketHistory.setMoneypair("btcusdt");
-		//httpUtil.getKLineData(marketHistory);
-		 */
-		
+		BaseHttp.testLoadMoneyPair(HttpUtil_okex_next_week.class);
+		BaseHttp.testLoadKline(HttpUtil_okex_next_week.class);
 	}
 
 }
