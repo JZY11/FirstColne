@@ -12,7 +12,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	a.url as platformUrl,b.moneypair,b.moneytype,c.bitbcnname as moneytypeName,
 	c.iconurl as moneytypeIcon,b.buymoneytype,c.currentcount as allMoneyCount
 	from platforminfo a
-	join thirdpartysupportmoney b on a.id = b.platformid
+	join platformsupportmoney b on a.id = b.platformid
 	left join bitbinfo c on b.moneytype=c.bitbcode
 	</select>
 	

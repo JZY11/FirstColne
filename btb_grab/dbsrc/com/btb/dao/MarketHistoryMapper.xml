@@ -19,7 +19,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	</select>
 	
 	<select id="selectPlateformid" resultType="string">
-		select DISTINCT platformid from thirdpartysupportmoney
+		select DISTINCT platformid from platformsupportmoney
 	</select>
 	
 	<update id="createtable_markethistory_1min" parameterType="string">
