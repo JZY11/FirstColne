@@ -91,7 +91,7 @@ public class StringUtil {
 			BigDecimal fabiToRmb = bigDecimal.multiply(usdMoney);
 			return fabiToRmb;
 		}else {
-			if (buymoneytype.equals("usdt")) {
+			if (buymoneytype.equalsIgnoreCase("usdt")) {
 				buymoneytype="USD";
 			}
 			return fabiToRmb(usdMoney, buymoneytype);
@@ -202,9 +202,6 @@ public class StringUtil {
 		if (object == null) {
 			return new BigDecimal("0");
 		}else {
-			if (object.toString().contains("E")) {
-				System.out.println("d");
-			}
 			String string = object.toString().replaceAll("[^0-9a-zA-Z-+.]","");
 			if (StringUtil.hashText(string)) {
 				if (string.split("\\.").length>2) {//点的数量也不能大于1个

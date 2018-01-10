@@ -62,12 +62,6 @@ public class WebSocketUtils extends WebSocketClient {
 			subModel.setId(chId);
 			subModel.setSub(chId);
 			chatclient.send(JSON.toJSONString(subModel));
-			
-			//添加买卖盘行情订阅
-			chId="market."+thirdpartysupportmoney.getMoneypair()+".depth.step1";
-			subModel.setId(chId);
-			subModel.setSub(chId);
-			chatclient.send(JSON.toJSONString(subModel));
 		}
 		
 		
@@ -83,14 +77,7 @@ public class WebSocketUtils extends WebSocketClient {
 				// Client 心跳
 				chatclient.send(marketJsonStr.replace("ping", "pong"));
 			} else {
-				if (marketJsonStr.contains("depth.step1")) {//是买盘买盘数据
-					MarketDepthVo1 marketDepthVo1 = JSON.parseObject(marketJsonStr, MarketDepthVo1.class);
-					MarketDepth marketDepthVo = marketDepthVo1.getTick();
-					if (marketDepthVo != null && marketDepthVo.getAsks() != null) {
-						String[] strings = StringUtil.getHuobiBuyMoneytype(marketDepthVo1.getCh().split("\\.")[1]);
-						TaskUtil.putBuySellDisk(platformid, strings[1], strings[0], marketDepthVo);
-					}
-				}else if (marketJsonStr.contains("trade.detail")) {
+				if (marketJsonStr.contains("trade.detail")) {
 					//实时行情数据
 					MarketVo1 vo1 = JSON.parseObject(marketJsonStr, MarketVo1.class);
 					MarketVo3 vo3=null;
@@ -102,25 +89,16 @@ public class WebSocketUtils extends WebSocketClient {
 						market.setPlatformid(platformid);//平台id 必填
 						market.setMoneypair(vo1.getCh().split("\\.")[1]);//交易对 必填
 						String[] strings = StringUtil.getHuobiBuyMoneytype(market.getMoneypair());
-						market.setBuymoneytype(strings[0]);
-						market.setMoneytype(strings[1]);
+						market.setBuymoneytype(strings[0].toUpperCase());
+						market.setMoneytype(strings[1].toUpperCase());
 						market.setClose(vo3.getPrice());//最新价格 必填
-						MarketOrder marketOrder = new MarketOrder();
 						if (vo3.getDirection().equals("sell")) {
 							market.setSell(vo3.getPrice());
-							marketOrder.setType("sell");
 						}else {
 							market.setBuy(vo3.getPrice());
-							marketOrder.setType("buy");
 						}
 						//添加或者更新行情数据
 						MongoDbUtil.insertOrUpdate(market);
-						
-						//添加订单数据
-						marketOrder.setPrice(market.getClose());//交易价格
-						marketOrder.setTs(vo3.getTs()*1000);//交易时间
-						marketOrder.setAmount(vo3.getAmount());//交易量
-						TaskUtil.putOrders(platformid, market.getMoneytype(), market.getBuymoneytype(), marketOrder);
 					}
 				}
 			}
