@@ -21,8 +21,7 @@ public class JsoupUtil {
 		//connect.validateTLSCertificates(false);
 		String text=null;
 		try {
-			text = connect.execute().body();
-			// = connect.get().body().text();
+			text = connect.get().body().text();
 			return text;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

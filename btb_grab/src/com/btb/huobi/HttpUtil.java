@@ -97,6 +97,7 @@ public class HttpUtil extends BaseHttp {
 	}
 	public static void main(String[] args) {
 		BaseHttp.testLoadKline(HttpUtil.class);
+		//BaseHttp.testLoadMoneyPair(HttpUtil.class);
 	}
 	
 }
