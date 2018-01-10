@@ -27,4 +27,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		insert into bitbinfo(bitbcode) select DISTINCT moneytype from PlatformSupportmoney  where moneytype not in (SELECT DISTINCT bitbcode from bitbinfo)
 	</insert>
 	
+	<select id="findBuyMoneyTypeRate" parameterType="string" resultType="com.btb.entity.BuyMoneyTypeRate">
+		select CONCAT(platformid,'.',moneytype) as id,closermb from markethistory 
+		where platformid in (${value}) and buymoneytype='usdt' and moneytype in (
+		select * from(select DISTINCT buymoneytype from platformsupportmoney where platformid in (${value})) aa
+		where aa.buymoneytype <![CDATA[ <> ]]> 'usdt' 
+		and aa.buymoneytype not in(select moneyCode from rate))
+		GROUP BY CONCAT(platformid,'.',moneytype)
+	</select>
+	
 </mapper>

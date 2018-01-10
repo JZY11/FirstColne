@@ -38,7 +38,7 @@ public class HttpUtil_okex extends BaseHttp {
 	
 	public String getPlatformId() {
 		//@2 必须跟数据库的平台id一致
-		return "okex";
+		return "OKEx";
 	}
 	
 	/**
@@ -106,6 +106,8 @@ public class HttpUtil_okex extends BaseHttp {
 			}
 	}
 	public static void main(String[] args) {
+		//BaseHttp.testLoadMoneyPair(HttpUtil_okex.class);
+		BaseHttp.testLoadKline(HttpUtil_okex.class);
 	}
 	
 }

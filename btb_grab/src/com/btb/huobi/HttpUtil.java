@@ -68,31 +68,35 @@ public class HttpUtil extends BaseHttp {
 	 * dbCurrentTime: 数据库当前最大时间,long类型
 	 */
 	public void getKLineData(Markethistory marketHistory,Long size,Long dbCurrentTime) {
-			String url="https://api.huobi.pro/market/history/kline?period=1min&size="+size+"&symbol="+marketHistory.getMoneypair();
-			String text = JsoupUtil.getJson(url);
-			if (text != null) {
-				MarketHistoryVo1 marketHistoryVo1 = JSON.parseObject(text, MarketHistoryVo1.class);
-				List<MarketHistoryVo2> data = marketHistoryVo1.getData();
-				////去除最新值,因为最新值,当前分钟还没有统计完整,
-				if (!data.isEmpty()) {
-					data.remove(0);
-				}
-				
-				for (MarketHistoryVo2 marketHistoryVo2:data) {
-					if (marketHistoryVo2.getId()<=dbCurrentTime) {
-						continue;//如果小于数据库最大时间,说明数据库已经存在,不需要再添加
-					}else {
-						marketHistory.setTimeid(marketHistoryVo2.getId());//这里需要注意,long类型时间必须为10位的,msql数据库才支持
-						marketHistory.setAmount(marketHistoryVo2.getAmount());
-						marketHistory.setClose(marketHistoryVo2.getClose());
-						marketHistory.setCount(marketHistoryVo2.getCount());
-						marketHistory.setHigh(marketHistoryVo2.getHigh());
-						marketHistory.setLow(marketHistoryVo2.getLow());
-						marketHistory.setOpen(marketHistoryVo2.getOpen());
-						marketHistory.setVol(marketHistoryVo2.getVol());
-						BaseDaoSql.save(marketHistory);//保存到数据库
+			try {
+				String url="https://api.huobi.pro/market/history/kline?period=1min&size="+size+"&symbol="+marketHistory.getMoneypair();
+				String text = JsoupUtil.getJson(url);
+				if (text != null) {
+					MarketHistoryVo1 marketHistoryVo1 = JSON.parseObject(text, MarketHistoryVo1.class);
+					List<MarketHistoryVo2> data = marketHistoryVo1.getData();
+					////去除最新值,因为最新值,当前分钟还没有统计完整,
+					if (!data.isEmpty()) {
+						data.remove(0);
+					}
+					
+					for (MarketHistoryVo2 marketHistoryVo2:data) {
+						if (marketHistoryVo2.getId()<=dbCurrentTime) {
+							continue;//如果小于数据库最大时间,说明数据库已经存在,不需要再添加
+						}else {
+							marketHistory.setTimeid(marketHistoryVo2.getId());//这里需要注意,long类型时间必须为10位的,msql数据库才支持
+							marketHistory.setAmount(marketHistoryVo2.getAmount());
+							marketHistory.setClose(marketHistoryVo2.getClose());
+							marketHistory.setCount(marketHistoryVo2.getCount());
+							marketHistory.setHigh(marketHistoryVo2.getHigh());
+							marketHistory.setLow(marketHistoryVo2.getLow());
+							marketHistory.setOpen(marketHistoryVo2.getOpen());
+							marketHistory.setVol(marketHistoryVo2.getVol());
+							BaseDaoSql.save(marketHistory);//保存到数据库
+						}
 					}
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 	}
 	public static void main(String[] args) {

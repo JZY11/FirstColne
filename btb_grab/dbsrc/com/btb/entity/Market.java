@@ -73,7 +73,7 @@ public class Market {
 		return ts;
 	}
 	public BigDecimal getAllMoneyCount() {
-		allMoneyCount=TaskUtil.bitbCountMap.get(moneytype);
+		allMoneyCount=TaskUtil.bitbCountMap.get(getMoneytype());
 		return allMoneyCount;
 	}
 	
@@ -94,11 +94,11 @@ public class Market {
 		this.sell = sell;
 	}
 	public BigDecimal getBuyrmb() {
-		buyrmb=StringUtil.ToRmb(buy, platformid, buymoneytype);
+		buyrmb=StringUtil.ToRmb(buy, platformid, getBuymoneytype());
 		return buyrmb;
 	}
 	public BigDecimal getSellrmb() {
-		sellrmb=StringUtil.ToRmb(sell, platformid, buymoneytype);
+		sellrmb=StringUtil.ToRmb(sell, platformid, getBuymoneytype());
 		return sellrmb;
 	}
 	public BigDecimal getZhangfuMoneyrmb() {
@@ -130,11 +130,11 @@ public class Market {
 		this.moneypair = moneypair;
 	}
 	public BigDecimal getOpen() {
-		open=TaskUtil.todayOpen.get(platformid+"."+moneytype+"_"+buymoneytype);
+		open=TaskUtil.todayOpen.get(platformid+"."+getMoneytype()+"_"+getBuymoneytype());
 		return open;
 	}
 	public BigDecimal getOpenrmb() {
-		openrmb=StringUtil.ToRmb(getOpen(), platformid, buymoneytype);
+		openrmb=StringUtil.ToRmb(getOpen(), platformid, getBuymoneytype());
 		return openrmb;
 	}
 	public BigDecimal getClose() {
@@ -144,7 +144,7 @@ public class Market {
 		this.close = close;
 	}
 	public BigDecimal getClosermb() {
-		closermb=StringUtil.ToRmb(close, platformid, buymoneytype);
+		closermb=StringUtil.ToRmb(close, platformid, getBuymoneytype());
 		return closermb;
 	}
 	public BigDecimal getCount() {
@@ -166,11 +166,11 @@ public class Market {
 		this.high = high;
 	}
 	public BigDecimal getLowrmb() {
-		lowrmb=StringUtil.ToRmb(low, platformid, buymoneytype);
+		lowrmb=StringUtil.ToRmb(low, platformid, getBuymoneytype());
 		return lowrmb;
 	}
 	public BigDecimal getHighrmb() {
-		highrmb=StringUtil.ToRmb(high, platformid, buymoneytype);
+		highrmb=StringUtil.ToRmb(high, platformid, getBuymoneytype());
 		return highrmb;
 	}
 	public BigDecimal getVol() {
@@ -180,7 +180,7 @@ public class Market {
 		this.vol = vol;
 	}
 	public BigDecimal getVolrmb() {
-		volrmb=StringUtil.ToRmb(vol, platformid, buymoneytype);
+		volrmb=StringUtil.ToRmb(vol, platformid, getBuymoneytype());
 		return volrmb;
 	}
 	public BigDecimal getAllMoneyrmb() {
@@ -208,6 +208,9 @@ public class Market {
 		this.platformUrl = platformUrl;
 	}
 	public String getMoneytype() {
+		if (moneytype != null) {
+			moneytype=moneytype.toUpperCase();
+		}
 		return moneytype;
 	}
 	public void setMoneytype(String moneytype) {
@@ -232,6 +235,9 @@ public class Market {
 		this.moneytypeUrl = moneytypeUrl;
 	}
 	public String getBuymoneytype() {
+		if (buymoneytype != null) {
+			buymoneytype=buymoneytype.toUpperCase();
+		}
 		return buymoneytype;
 	}
 	public void setBuymoneytype(String buymoneytype) {

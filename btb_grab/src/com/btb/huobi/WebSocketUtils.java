@@ -89,8 +89,8 @@ public class WebSocketUtils extends WebSocketClient {
 						market.setPlatformid(platformid);//平台id 必填
 						market.setMoneypair(vo1.getCh().split("\\.")[1]);//交易对 必填
 						String[] strings = StringUtil.getHuobiBuyMoneytype(market.getMoneypair());
-						market.setBuymoneytype(strings[0].toUpperCase());
-						market.setMoneytype(strings[1].toUpperCase());
+						market.setBuymoneytype(strings[0]);
+						market.setMoneytype(strings[1]);
 						market.setClose(vo3.getPrice());//最新价格 必填
 						if (vo3.getDirection().equals("sell")) {
 							market.setSell(vo3.getPrice());

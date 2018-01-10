@@ -27,6 +27,7 @@ import com.btb.entity.Bitbinfo;
 import com.btb.entity.BuyMoneyTypeRate;
 import com.btb.entity.MarketDepth;
 import com.btb.entity.MarketOrder;
+import com.btb.entity.Markethistory;
 import com.btb.entity.Rate;
 import com.btb.entity.PlatformInfo;
 import com.btb.entity.PlatformSupportmoney;
@@ -65,9 +66,11 @@ public class TaskUtil {
 	//手动填写,所有平台的id集合
 	public static Set<String> platformids=new HashSet<>();
 	public static void main(String[] args) {
-		initStartAll();
-		taskList();
-		
+		//initStartAll();
+		//taskList();
+		InitAllHttpUtils();
+		initWaiHuiToDB();
+		httpBuyMoneyTypeKline();
 		
 	}
 	
@@ -220,11 +223,22 @@ public class TaskUtil {
 		
 	}
 	
-	//启动加载每个平台的btc,eth价格, 每1.5分钟执行一次
+	//启动加载每个平台的btc,eth价格, 每1小时执行一次
 	public static void initBuyMonetyTypeRate() {
 		//加载每个平台所有buymoneytype的人民币价格汇率
-		List<BuyMoneyTypeRate> selectAll3 = BaseDaoSql.findAll(BuyMoneyTypeRate.class);
+		String platformidsStr="";
+		for (String string : platformids) {
+			platformidsStr+="'"+string+"',";
+		}
+		if (StringUtil.hashText(platformidsStr)) {
+			platformidsStr=platformidsStr.substring(0, platformidsStr.length()-1);
+		}
+		List<BuyMoneyTypeRate> selectAll3 = BaseDaoSql.selectList("findBuyMoneyTypeRate",platformidsStr);
 		for (BuyMoneyTypeRate buyMoneyTypeRate1 : selectAll3) {
+			int update = BaseDaoSql.update(buyMoneyTypeRate1);
+			if (update==0) {
+				BaseDaoSql.save(buyMoneyTypeRate1);
+			}
 			buyMonetyTypeRate.put(buyMoneyTypeRate1.getId(), buyMoneyTypeRate1.getClosermb());
 		}
 	}
@@ -291,33 +305,31 @@ public class TaskUtil {
 	 * 加载所有平台的btc_usdt,和eth_usdt,这两个是最基础的需要先计算
 	 * 只在线下计算,不放在在启动中
 	 */
-	/*public static void initBaseBtcAndEthKline() {
-		Map<String, BaseHttp> beanHttpMap = SpringUtil.context.getBeansOfType(BaseHttp.class);
-		for (BaseHttp baseHttp : beanHttpMap.values()) {
-			CacheData.httpBeans.put(baseHttp.getPlatformId(), baseHttp);
+	public static void httpBuyMoneyTypeKline() {
+		for (String platformid : platformids) {
+			List<PlatformSupportmoney> moneyPairs = BaseDaoSql.findList("select * from platformsupportmoney where platformid='"+platformid+"' and buymoneytype='usdt'", PlatformSupportmoney.class);
+			for (PlatformSupportmoney thirdpartysupportmoney : moneyPairs) {
+				Markethistory marketHistory = new Markethistory();
+				marketHistory.setPlatformid(platformid);
+				marketHistory.setMoneypair(thirdpartysupportmoney.getMoneypair());
+				marketHistory.setMoneytype(thirdpartysupportmoney.getMoneytype());
+				marketHistory.setBuymoneytype(thirdpartysupportmoney.getBuymoneytype());
+				long currentTime = System.currentTimeMillis()/1000;//换算成秒级
+				Long dbCurrentTime=BaseDaoSql.selectOne("getMaxTimeId", marketHistory);
+				if (dbCurrentTime == null) {//如果第一次获取数据,直接过去一天数据
+					dbCurrentTime=currentTime-24*60*60;
+				}
+				long size = (currentTime-dbCurrentTime)/60;
+				if (size > 1440) {//大于一天就取一天的数据
+					size=1440;
+				}
+				if (size != 0) {
+					BaseHttp baseHttp = TaskUtil.httpBeans.get(marketHistory.getPlatformid());
+					baseHttp.getKLineData(marketHistory, size, dbCurrentTime);
+				}
+			}
+			
 		}
-		MarketHistoryMapper marketHistoryMapper = SpringUtil.getBean(MarketHistoryMapper.class);
-		List<Thirdpartysupportmoney> moneyPairs = marketHistoryMapper.findAllPingTaiEthAndBtc();
-		for (Thirdpartysupportmoney thirdpartysupportmoney : moneyPairs) {
-			Markethistory marketHistory = new Markethistory();
-			marketHistory.setPlatformid(thirdpartysupportmoney.getPlatformid());
-			marketHistory.setMoneypair(thirdpartysupportmoney.getMoneypair());
-			marketHistory.setMoneytype(thirdpartysupportmoney.getMoneytype());
-			marketHistory.setBuymoneytype(thirdpartysupportmoney.getBuymoneytype());
-			long currentTime = System.currentTimeMillis()/1000;//换算成秒级
-			Long dbCurrentTime=marketHistoryMapper.getMaxTimeId(marketHistory);
-			if (dbCurrentTime == null) {//如果第一次获取数据,直接过去一天数据
-				dbCurrentTime=currentTime-24*60*60;
-			}
-			long size = (currentTime-dbCurrentTime)/60;
-			if (size > 1440) {//大于一天就取一天的数据
-				size=1440;
-			}
-			if (size != 0) {
-				BaseHttp baseHttp = CacheData.httpBeans.get(marketHistory.getPlatformid());
-				baseHttp.getKLineData(marketHistory, marketHistoryMapper, size, dbCurrentTime);
-			}
-		}
-	}*/
+	}
 	
 }
