@@ -249,8 +249,7 @@ public class TaskUtil {
 		for (Class<WebSocketClient> webSocketUtil : webSocketUtils) {
 			try {
 				Method method = webSocketUtil.getMethod("executeWebSocket");
-				WebSocketClient webSocketClient = (WebSocketClient)method.invoke(null, null);
-				TaskUtil.webSocketClientMap.put(webSocketUtil.getMethod("getPlatFormId").invoke(null, null).toString(), webSocketClient);
+				method.invoke(null, null);
 			} catch (NoSuchMethodException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

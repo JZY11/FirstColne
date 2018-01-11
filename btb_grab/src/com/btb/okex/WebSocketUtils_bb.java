@@ -35,10 +35,9 @@ public class WebSocketUtils_bb extends WebSocketClient {
 	private static final String url = "wss://real.okex.com:10441/websocket";
 	
 	private static WebSocketUtils_bb chatclient = null;
-	private static String platformid;
+	private static String platformid=new HttpUtil_okex().getPlatformId();
 	public WebSocketUtils_bb(URI serverUri, Map<String, String> headers, int connecttimeout) {
 		super(serverUri, new Draft_17(), headers, connecttimeout);
-		platformid=new HttpUtil_okex().getPlatformId();
 	}
 	@Override
 	public void onOpen(ServerHandshake handshakedata) {
@@ -93,8 +92,7 @@ public class WebSocketUtils_bb extends WebSocketClient {
 	public void onClose(int code, String reason, boolean remote) {
 		System.out.println("关流--Connection closed by " + (remote ? "remote peer" : "us"));
 		try {
-			WebSocketClient webSocketClient = executeWebSocket();
-			TaskUtil.webSocketClientMap.put(platformid, webSocketClient);
+			executeWebSocket();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -102,12 +100,12 @@ public class WebSocketUtils_bb extends WebSocketClient {
 	}
 
 	//不需要动
-	public static WebSocketClient executeWebSocket() throws Exception {
+	public static void executeWebSocket() throws Exception {
 		//WebSocketImpl.DEBUG = true;
 		chatclient = new WebSocketUtils_bb(new URI(url), getWebSocketHeaders(), 1000);
 		trustAllHosts(chatclient);//添加ssh安全信任
 		chatclient.connect();//异步链接
-		return chatclient;
+		TaskUtil.webSocketClientMap.put(platformid, chatclient);
 		//System.out.println(chatclient.getReadyState());// 获取链接状态,OPEN是链接状态,CONNECTING: 正在链接状态
 	}
 	public static void main(String[] args) throws Exception {

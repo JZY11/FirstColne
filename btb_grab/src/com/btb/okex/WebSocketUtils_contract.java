@@ -132,8 +132,7 @@ public class WebSocketUtils_contract extends WebSocketClient {
 	public void onClose(int code, String reason, boolean remote) {
 		System.out.println("关流--Connection closed by " + (remote ? "remote peer" : "us"));
 		try {
-			WebSocketClient webSocketClient = executeWebSocket();
-			TaskUtil.webSocketClientMap.put(platformid_this_week, webSocketClient);
+			executeWebSocket();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -141,12 +140,12 @@ public class WebSocketUtils_contract extends WebSocketClient {
 	}
 
 	//不需要动
-	public static WebSocketClient executeWebSocket() throws Exception {
+	public static void executeWebSocket() throws Exception {
 		//WebSocketImpl.DEBUG = true;
 		chatclient = new WebSocketUtils_contract(new URI(url), getWebSocketHeaders(), 1000);
 		trustAllHosts(chatclient);//添加ssh安全信任
 		chatclient.connect();//异步链接
-		return chatclient;
+		TaskUtil.webSocketClientMap.put(platformid_this_week, chatclient);
 		//System.out.println(chatclient.getReadyState());// 获取链接状态,OPEN是链接状态,CONNECTING: 正在链接状态
 	}
 	public static void main(String[] args) throws Exception {

@@ -26,7 +26,6 @@ import org.java_websocket.handshake.ServerHandshake;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.btb.binance.vo.MarketVo1;
-import com.btb.binance.vo.MarketVo1.MarketVo3;
 import com.btb.entity.Market;
 import com.btb.entity.MarketDepth;
 import com.btb.entity.MarketOrder;
@@ -41,82 +40,49 @@ import com.btb.util.TaskUtil;
 import com.btb.util.dao.BaseDaoSql;
 
 public class WebSocketUtils extends WebSocketClient {
+	
 	//{改}
-	private static final String url = "wss://api.huobi.pro/ws";
+	private static final String url = "wss://stream.binance.com:9443/ws/{moneypair}@trade";
 	
 	private static WebSocketUtils chatclient = null;
-	private static String platformid;
+	private static String platformid=new HttpUtil().getPlatformId();
 	public WebSocketUtils(URI serverUri, Map<String, String> headers, int connecttimeout) {
 		super(serverUri, new Draft_17(), headers, connecttimeout);
-		platformid=new HttpUtil().getPlatformId();
 	}
 	@Override
 	public void onOpen(ServerHandshake handshakedata) {
 		System.out.println("开流--opened connection");
-		List<PlatformSupportmoney> jiaoyiduis = BaseDaoSql.findList("select * from platformsupportmoney where platformid='"+platformid+"'", PlatformSupportmoney.class);
-		for (PlatformSupportmoney thirdpartysupportmoney : jiaoyiduis) {
-			SubModel subModel = new SubModel();
-			//打开后添加实时行情订阅
-			String chId = "market."+thirdpartysupportmoney.getMoneypair()+".trade.detail";
-			subModel.setId(chId);
-			subModel.setSub(chId);
-			chatclient.send(JSON.toJSONString(subModel));
-		}
-		
-		
 	}
 	//需要改这里或者另外一个OnMessage重载方法{改}
 	@Override
 	public void onMessage(ByteBuffer socketBuffer) {
-		try {
-			String marketStr = CommonUtils.byteBufferToString(socketBuffer);
-			String marketJsonStr = CommonUtils.uncompress(marketStr);
-			if (marketJsonStr.contains("ping")) {
-				//System.out.println(marketJsonStr);
-				// Client 心跳
-				chatclient.send(marketJsonStr.replace("ping", "pong"));
-			} else {
-				if (marketJsonStr.contains("trade.detail")) {
-					//实时行情数据
-					MarketVo1 vo1 = JSON.parseObject(marketJsonStr, MarketVo1.class);
-					MarketVo3 vo3=null;
-					try {
-						vo3 = vo1.getTick().getData().get(0);
-					} catch (Exception e) {}
-					if (vo3!=null && vo3.getPrice() != null) {//如果是订阅的行情数据
-						Market market = new Market();
-						market.setPlatformid(platformid);//平台id 必填
-						market.setMoneypair(vo1.getCh().split("\\.")[1]);//交易对 必填
-						String[] strings = StringUtil.getHuobiBuyMoneytype(market.getMoneypair());
-						market.setBuymoneytype(strings[0]);
-						market.setMoneytype(strings[1]);
-						market.setClose(vo3.getPrice());//最新价格 必填
-						if (vo3.getDirection().equals("sell")) {
-							market.setSell(vo3.getPrice());
-						}else {
-							market.setBuy(vo3.getPrice());
-						}
-						//添加或者更新行情数据
-						MongoDbUtil.insertOrUpdate(market);
-					}
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 	
 	//{改}
 	@Override
 	public void onMessage(String message) {
+		MarketVo1 vo1 = JSON.parseObject(message, MarketVo1.class);
+			Market market = new Market();
+			market.setPlatformid(platformid);//平台id 必填
+			market.setMoneypair(vo1.getS());//交易对 必填
+			String[] strings = StringUtil.getHuobiBuyMoneytype(market.getMoneypair());
+			market.setBuymoneytype(strings[0]);
+			market.setMoneytype(strings[1]);
+			market.setClose(vo1.getP());//最新价格 必填
+			if (!vo1.getM()) {
+				market.setSell(vo1.getP());
+			}else {
+				market.setBuy(vo1.getP());
+			}
+			//添加或者更新行情数据
+			MongoDbUtil.insertOrUpdate(market);
 	}
 	
 	@Override
 	public void onClose(int code, String reason, boolean remote) {
 		System.out.println("关流--Connection closed by " + (remote ? "remote peer" : "us"));
 		try {
-			WebSocketClient webSocketClient = executeWebSocket();
-			TaskUtil.webSocketClientMap.put(platformid, webSocketClient);
+			executeWebSocket();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -124,13 +90,15 @@ public class WebSocketUtils extends WebSocketClient {
 	}
 
 	//不需要动
-	public static WebSocketClient executeWebSocket() throws Exception {
+	public static void executeWebSocket() throws Exception {
 		//WebSocketImpl.DEBUG = true;
-		chatclient = new WebSocketUtils(new URI(url), getWebSocketHeaders(), 1000);
-		trustAllHosts(chatclient);//添加ssh安全信任
-		chatclient.connect();//异步链接
-		return chatclient;
-		//System.out.println(chatclient.getReadyState());// 获取链接状态,OPEN是链接状态,CONNECTING: 正在链接状态
+		List<PlatformSupportmoney> jiaoyiduis = BaseDaoSql.findList("select * from platformsupportmoney where platformid='"+platformid+"'", PlatformSupportmoney.class);
+		for (PlatformSupportmoney thirdpartysupportmoney : jiaoyiduis) {
+			chatclient = new WebSocketUtils(new URI(url.replace("{moneypair}", thirdpartysupportmoney.getMoneypair().toLowerCase())), getWebSocketHeaders(), 1000);
+			trustAllHosts(chatclient);//添加ssh安全信任
+			chatclient.connect();//异步链接
+			TaskUtil.webSocketClientMap.put(platformid+"_"+thirdpartysupportmoney.getMoneypair().toLowerCase(), chatclient);
+		}
 	}
 	public static void main(String[] args) throws Exception {
 		TaskUtil.initStartAll();
