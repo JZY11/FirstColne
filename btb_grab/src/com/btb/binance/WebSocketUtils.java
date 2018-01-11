@@ -42,7 +42,7 @@ import com.btb.util.dao.BaseDaoSql;
 public class WebSocketUtils extends WebSocketClient {
 	
 	//{改}
-	private static final String url = "wss://stream.binance.com:9443/ws/{moneypair}@trade";
+	private static final String url = "wss://stream.binance.com:9443/ws/{moneypair}@ticker";
 	
 	private static WebSocketUtils chatclient = null;
 	private static String platformid=new HttpUtil().getPlatformId();
@@ -61,21 +61,18 @@ public class WebSocketUtils extends WebSocketClient {
 	//{改}
 	@Override
 	public void onMessage(String message) {
-		MarketVo1 vo1 = JSON.parseObject(message, MarketVo1.class);
-			Market market = new Market();
-			market.setPlatformid(platformid);//平台id 必填
-			market.setMoneypair(vo1.getS());//交易对 必填
-			String[] strings = StringUtil.getHuobiBuyMoneytype(market.getMoneypair());
-			market.setBuymoneytype(strings[0]);
-			market.setMoneytype(strings[1]);
-			market.setClose(vo1.getP());//最新价格 必填
-			if (!vo1.getM()) {
-				market.setSell(vo1.getP());
-			}else {
-				market.setBuy(vo1.getP());
-			}
-			//添加或者更新行情数据
-			MongoDbUtil.insertOrUpdate(market);
+		Map vo1 = JSON.parseObject(message, Map.class);
+		Market market = new Market();
+		market.setPlatformid(platformid);//平台id 必填
+		market.setMoneypair(vo1.get("s").toString());//交易对 必填
+		String[] strings = StringUtil.getHuobiBuyMoneytype(market.getMoneypair());
+		market.setBuymoneytype(strings[0]);
+		market.setMoneytype(strings[1]);
+		market.setClose(StringUtil.toBigDecimal(vo1.get("c")));//最新价格 必填
+		market.setSell(StringUtil.toBigDecimal(vo1.get("a")));
+		market.setBuy(StringUtil.toBigDecimal(vo1.get("b")));
+		//添加或者更新行情数据
+		MongoDbUtil.insertOrUpdate(market);
 	}
 	
 	@Override
