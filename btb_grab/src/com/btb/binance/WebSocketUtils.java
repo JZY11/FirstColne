@@ -1,4 +1,4 @@
-package com.btb.huobi;
+package com.btb.binance;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -25,14 +25,12 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.btb.binance.vo.MarketVo1;
+import com.btb.binance.vo.MarketVo1.MarketVo3;
 import com.btb.entity.Market;
 import com.btb.entity.MarketDepth;
 import com.btb.entity.MarketOrder;
 import com.btb.entity.PlatformSupportmoney;
-import com.btb.huobi.vo.MarketDepthVo1;
-import com.btb.huobi.vo.MarketVo1;
-import com.btb.huobi.vo.MarketVo1.MarketVo2;
-import com.btb.huobi.vo.MarketVo1.MarketVo3;
 import com.btb.util.BaseHttp;
 import com.btb.util.CommonUtils;
 import com.btb.util.H2Util;

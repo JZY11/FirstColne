@@ -168,7 +168,7 @@ public class Markethistory {
 	public String getTime_week() {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date(timeid*1000));
-		int weekInt = calendar.getWeeksInWeekYear();//解决周跨年问题
+		int weekInt = calendar.get(Calendar.WEEK_OF_YEAR);//解决周跨年问题
 		if (weekInt==52) {
 			int month = calendar.get(Calendar.MONTH)+1;
 			if (month==1) {//如果是下年1月,应该取上年的数据

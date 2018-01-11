@@ -164,15 +164,19 @@ public class StringUtil {
 	 * @return 0: buymoneyType,1:moneytype
 	 */
 	public static String[] getHuobiBuyMoneytype(String moneypair) {
+		moneypair=moneypair.toUpperCase();
 		String[] jiaoyidui=new String[2];
-		if (moneypair.endsWith("usdt")) {
-			jiaoyidui[0]="usdt";
+		if (moneypair.endsWith("USDT")) {
+			jiaoyidui[0]="USDT";
 			jiaoyidui[1]=moneypair.substring(0, moneypair.length()-4);
-		}else if (moneypair.endsWith("btc")) {
-			jiaoyidui[0]="btc";
+		}else if (moneypair.endsWith("BTC")) {
+			jiaoyidui[0]="BTC";
 			jiaoyidui[1]=moneypair.substring(0, moneypair.length()-3);
-		}else if (moneypair.endsWith("eth")) {
-			jiaoyidui[0]="eth";
+		}else if (moneypair.endsWith("ETH")) {
+			jiaoyidui[0]="ETH";
+			jiaoyidui[1]=moneypair.substring(0, moneypair.length()-3);
+		}else if (moneypair.toUpperCase().endsWith("BNB")) {
+			jiaoyidui[0]="BNB";
 			jiaoyidui[1]=moneypair.substring(0, moneypair.length()-3);
 		}else {
 			//获取所有buymoneytype,和法币,获取交易对

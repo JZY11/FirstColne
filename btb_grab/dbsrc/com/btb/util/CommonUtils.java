@@ -1,4 +1,4 @@
-package com.btb.huobi;
+package com.btb.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
