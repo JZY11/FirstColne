@@ -39,16 +39,23 @@ public abstract class BaseHttp {
 		//同步到数据里面获取外汇利率
 		System.out.println("正在从数据库加载外汇汇率");
 		TaskUtil.initWaiHuiToDB();
+		
+		String platformId=null;
+		try {
+			platformId = c.newInstance().getPlatformId();
+		} catch (InstantiationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IllegalAccessException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		//先加载buymoneytype的k线数据,用于计算它的汇率
-		TaskUtil.httpBuyMoneyTypeKline();
+		TaskUtil.httpBuyMoneyTypeKline(platformId);
 		//启动加载每个平台的btc,eth价格, 每1.5分钟执行一次,从数据库采集
 		System.out.println("从数据库抓取btc和ehc的最新价格");
 		TaskUtil.initBuyMonetyTypeRate();
-		try {
-			MarketHistoryKlineTread marketHistoryKlineTread = new MarketHistoryKlineTread(c.newInstance().getPlatformId());
-			marketHistoryKlineTread.run();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		MarketHistoryKlineTread marketHistoryKlineTread = new MarketHistoryKlineTread(platformId);
+		marketHistoryKlineTread.run();
 	}
 }

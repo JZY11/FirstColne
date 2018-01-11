@@ -70,7 +70,7 @@ public class TaskUtil {
 		//taskList();
 		InitAllHttpUtils();
 		initWaiHuiToDB();
-		httpBuyMoneyTypeKline();
+		httpBuyMoneyTypeKline(null);
 		
 	}
 	
@@ -305,8 +305,11 @@ public class TaskUtil {
 	 * 加载所有平台的btc_usdt,和eth_usdt,这两个是最基础的需要先计算
 	 * 只在线下计算,不放在在启动中
 	 */
-	public static void httpBuyMoneyTypeKline() {
+	public static void httpBuyMoneyTypeKline(String platformidTest) {
 		for (String platformid : platformids) {
+			if (platformidTest!=null && !platformid.equals(platformidTest)) {
+				continue;
+			}
 			List<PlatformSupportmoney> moneyPairs = BaseDaoSql.findList("select * from platformsupportmoney where platformid='"+platformid+"' and buymoneytype='usdt'", PlatformSupportmoney.class);
 			for (PlatformSupportmoney thirdpartysupportmoney : moneyPairs) {
 				Markethistory marketHistory = new Markethistory();
