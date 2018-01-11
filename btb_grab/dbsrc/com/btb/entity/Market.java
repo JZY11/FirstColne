@@ -27,8 +27,8 @@ public class Market {
 	//必填
 	String platformid;//平台id  
 	String platformName;//平台名称
-	String platformIcon;//平台图标url
-	String platformUrl;//平台url
+	String platformIcon;//平台图标url,不需要
+	String platformUrl;//平台url,不需要
 	String moneypair;//交易对比如btcuatf
 	//必填
 	String moneytype;//币种btcusdt,就是btc 

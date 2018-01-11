@@ -25,6 +25,7 @@ import org.xml.sax.SAXException;
 import com.alibaba.fastjson.JSON;
 import com.btb.entity.Bitbinfo;
 import com.btb.entity.BuyMoneyTypeRate;
+import com.btb.entity.Market;
 import com.btb.entity.MarketDepth;
 import com.btb.entity.MarketOrder;
 import com.btb.entity.Markethistory;
@@ -65,6 +66,9 @@ public class TaskUtil {
 	public static Map<String, BigDecimal> bitbCountMap = new HashMap<>();
 	//手动填写,所有平台的id集合
 	public static Set<String> platformids=new HashSet<>();
+	public static String platformidsStr="";
+	//这个平台的行情数据Map<platformId.BTC_USDT,Market对象>
+	public static Map<String, Market> marketMap=new HashMap<>();
 	public static void main(String[] args) {
 		//initStartAll();
 		//taskList();
@@ -171,6 +175,12 @@ public class TaskUtil {
 				platformids.add(baseHttp2.getPlatformId());
 			}
 		}
+		for (String string : platformids) {
+			platformidsStr+="'"+string+"',";
+		}
+		if (StringUtil.hashText(platformidsStr)) {
+			platformidsStr=platformidsStr.substring(0, platformidsStr.length()-1);
+		}
 	}
 	//从db里面加载所有交易对
 	public static void initMoneypairByDB() {
@@ -208,31 +218,10 @@ public class TaskUtil {
 		}
 	}
 	
-	//加载数据库今日开盘价格
-	public static void initTodayOpen() {
-		//今日开盘价格
-		for (String platformid : platformids) {
-			TodayOpenMoney todayOpenMoney = new TodayOpenMoney();
-			todayOpenMoney.setPlatformid(platformid);
-			List<TodayOpenMoney> list = BaseDaoSql.findList("select * from todayopenmoney where platformid = '"+platformid+"'", TodayOpenMoney.class);
-			for (TodayOpenMoney todayOpenMoney2 : list) {
-				todayOpen.put(todayOpenMoney2.getId(), todayOpenMoney2.getOpen());
-			}
-		}
-		
-		
-	}
 	
 	//启动加载每个平台的btc,eth价格, 每1小时执行一次
 	public static void initBuyMonetyTypeRate() {
 		//加载每个平台所有buymoneytype的人民币价格汇率
-		String platformidsStr="";
-		for (String string : platformids) {
-			platformidsStr+="'"+string+"',";
-		}
-		if (StringUtil.hashText(platformidsStr)) {
-			platformidsStr=platformidsStr.substring(0, platformidsStr.length()-1);
-		}
 		List<BuyMoneyTypeRate> selectAll3 = BaseDaoSql.selectList("findBuyMoneyTypeRate",platformidsStr);
 		for (BuyMoneyTypeRate buyMoneyTypeRate1 : selectAll3) {
 			int update = BaseDaoSql.update(buyMoneyTypeRate1);
@@ -285,6 +274,27 @@ public class TaskUtil {
 			MongoDbUtil.insertOrUpdateOrderTab(_id, JSON.toJSONString(myList));
 		}
 	}
+	
+	public static void initTodayOpen() {
+		List<Markethistory> markethistories = BaseDaoSql.selectList("findTodayOpenMoney",platformidsStr);
+		for (Markethistory markethistory : markethistories) {
+			TodayOpenMoney todayOpenMoney = new TodayOpenMoney();
+			String id=markethistory.getPlatformid()+"."+markethistory.getMoneytype()+"_"+markethistory.getBuymoneytype();
+			todayOpenMoney.setId(id);
+			todayOpenMoney.setOpen(markethistory.getOpen());
+			todayOpenMoney.setToday(markethistory.getToday());
+			todayOpenMoney.setBuymoneytype(markethistory.getBuymoneytype());
+			todayOpenMoney.setMoneypair(markethistory.getMoneypair());
+			todayOpenMoney.setMoneytype(markethistory.getMoneytype());
+			todayOpenMoney.setPlatformid(markethistory.getPlatformid());
+			todayOpen.put(todayOpenMoney.getId(), todayOpenMoney.getOpen());
+			int updateCount = BaseDaoSql.update(todayOpenMoney);
+			if (updateCount==0) {
+				BaseDaoSql.save(todayOpenMoney);
+			}
+		}
+	}
+	
 	//采集订单的时候调用这个
 	public static void putBuySellDisk(String platformId,String moneytype,String buymoneytype,MarketDepth marketDepth) {
 		if (marketDepth != null) {

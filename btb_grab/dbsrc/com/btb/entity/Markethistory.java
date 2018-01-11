@@ -56,6 +56,12 @@ public class Markethistory {
 	BigDecimal amount;//1分钟成交量
 	
 	
+	public String getToday() {
+		return today;
+	}
+	public void setToday(String today) {
+		this.today = today;
+	}
 	public String getId() {
 		id=getPlatformid()+"."+getMoneytype()+"_"+getBuymoneytype();
 		return id;

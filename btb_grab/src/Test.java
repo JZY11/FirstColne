@@ -23,7 +23,7 @@ public class Test {
 		System.out.println(calendar.getWeekYear() +"-"+ calendar.getWeeksInWeekYear()+"week");
 		System.out.println(DateUtil.dateFormat(new Date(1514419260000L), "yyyy-u"));*/
 		//System.out.println(new SimpleDateFormat("yyyy-MM-dd").parse(DateUtil.getDateNoTime()).getTime()/1000);
-		System.out.println(DateUtil.dateFormat(new Date(1515645539999l), "yyyy-MM-dd HH:mm:ss"));
+		System.out.println(DateUtil.dateFormat(new Date(1515620820000l), "yyyy-MM-dd HH:mm:ss"));
 		System.out.println(DateUtil.dateFormat(new Date(1515643859999l), "yyyy-MM-dd HH:mm:ss"));
 	}
 	//币种大全
