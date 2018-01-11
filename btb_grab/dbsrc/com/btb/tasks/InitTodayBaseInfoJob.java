@@ -11,13 +11,13 @@ import com.btb.tasks.service.BaseJob;
 import com.btb.util.TaskUtil;
 
 //获取每个平台,每个交易对的 今日开盘价格, 从k线图里面获取,每1.5分钟跑一次
-public class InitTodayOpenJob extends BaseJob{
+public class InitTodayBaseInfoJob extends BaseJob{
 	@Override
 	public void execute(JobExecutionContext job) throws JobExecutionException {
 		// TODO Auto-generated method stub
-		System.out.println("获取每个平台,每个交易对的 今日开盘价格, 从k线图里面获取,每1.5分钟跑一次");
-		Tasklog.save(new Tasklog("获取每个平台,每个交易对的 今日开盘价格, 从k线图里面获取,每1.5分钟跑一次"));
-		TaskUtil.initTodayOpen();
+		System.out.println("获取行情的基础信息,1.5分钟跑一次");
+		Tasklog.save(new Tasklog("获取行情的基础信息,1.5分钟跑一次"));
+		TaskUtil.InitTodayBaseInfoMarket();
 	}
 
 	@Override

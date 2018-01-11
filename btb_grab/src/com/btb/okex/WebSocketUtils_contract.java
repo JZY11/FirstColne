@@ -106,23 +106,14 @@ public class WebSocketUtils_contract extends WebSocketClient {
 					market.setPlatformid(pid);
 					for (Object[] order : data) {
 						market.setClose(new BigDecimal(order[1].toString()));
-						MarketOrder marketOrder = new MarketOrder();
-						marketOrder.setPrice(market.getClose());//交易价格
-						marketOrder.setTs(Long.valueOf(order[3].toString()));//交易时间
-						marketOrder.setAmount(new BigDecimal(order[2].toString()));//交易量
 						if (order[4].equals("ask")) {
 							market.setSell(new BigDecimal(order[1].toString()));//主动方
-							marketOrder.setType("sell");
 						}else {
 							market.setBuy(new BigDecimal(order[1].toString()));//主动方
-							marketOrder.setType("buy");
 						}
-						//添加订单数据
-						TaskUtil.putOrders(pid, market.getMoneytype(), market.getBuymoneytype(), marketOrder);
 					}
 					//添加或者更新行情数据
 					MongoDbUtil.insertOrUpdate(market);
-					
 				} catch (Exception e) {}
 			}
 		}

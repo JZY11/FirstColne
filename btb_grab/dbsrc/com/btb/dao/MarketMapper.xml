@@ -6,11 +6,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<update id="updateByTowIds" parameterType="com.btb.entity.Market">
 		update market where platformid = #{platformid} and moneypair = #{moneypair}
 	</update>
-		<!-- 获取今日开盘价格 -->
-	<select id="findTodayOpenMoney" resultType="com.btb.entity.Markethistory">
-		select id,MIN(timeid),platformid,moneypair,moneytype,buymoneytype,open,time_day as today
-		from markethistory  where time_day=curdate() and platformid in(${value}) GROUP BY id
-	</select>
 	<select id="findAllMarketInfo" resultType="com.btb.entity.Market">
 	select b.platformid,a.name as platformName,a.urlicon as platformIcon,
 	a.url as platformUrl,b.moneypair,b.moneytype,c.bitbcnname as moneytypeName,
@@ -20,6 +15,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	left join bitbinfo c on b.moneytype=c.bitbcode
 	</select>
 	
+	<!-- 程序启动,加载这个程序里面的所有平台的交易对,当前行情 -->
+	<select id="todayBaseInfoMarket" parameterType="string" resultType="com.btb.entity.Market">
+		select aa.*,bb.bitbcnname as moneytypeName,bb.currentcount as allMoneyCount from
+		(select id as _id,MIN(timeid),platformid,moneypair,moneytype,buymoneytype,open,
+		MIN(low) as low,MAX(high) as high,SUM(vol) as vol,SUM(amount) as amount
+		from markethistory  where time_day=curdate() and platformid in(${value}) GROUP BY id) aa
+		join bitbinfo bb on aa.moneytype=bb.bitbcode
+	</select>
 	<!-- 更改实时行情,定时更改h2内存数据里面的实时行情 -->
 	<select id="findMarketByThisDayTask" resultType="com.btb.entity.Market">
 		select platformid,moneypair,moneytype,buymoneytype,MIN(low) as low,MAX(high) as high,SUM(vol) as vol,SUM(amount) as amount from markethistory 

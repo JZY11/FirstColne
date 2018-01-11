@@ -36,6 +36,7 @@ import com.btb.huobi.vo.MarketVo1.MarketVo3;
 import com.btb.util.BaseHttp;
 import com.btb.util.CommonUtils;
 import com.btb.util.H2Util;
+import com.btb.util.MarketUtil;
 import com.btb.util.MongoDbUtil;
 import com.btb.util.SpringUtil;
 import com.btb.util.StringUtil;
@@ -98,7 +99,8 @@ public class WebSocketUtils extends WebSocketClient {
 							market.setBuy(vo3.getPrice());
 						}
 						//添加或者更新行情数据
-						MongoDbUtil.insertOrUpdate(market);
+						MarketUtil.changeMarket(market);
+						System.out.println(JSON.toJSONString(TaskUtil.marketMap.get(market.get_id())));
 					}
 				}
 			}

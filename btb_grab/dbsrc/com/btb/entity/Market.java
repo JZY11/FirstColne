@@ -73,21 +73,29 @@ public class Market {
 		return ts;
 	}
 	public BigDecimal getAllMoneyCount() {
-		allMoneyCount=TaskUtil.bitbCountMap.get(getMoneytype());
 		return allMoneyCount;
 	}
 	
+	public void setAllMoneyCount(BigDecimal allMoneyCount) {
+		this.allMoneyCount = allMoneyCount;
+	}
 	public String get_id() {
-		_id=getPlatformid()+"."+getMoneytype()+"_"+getBuymoneytype()+".market";
+		_id=getPlatformid()+"."+getMoneytype()+"_"+getBuymoneytype();
 		return _id;
 	}
 	public BigDecimal getBuy() {
+		if (buy==null) {//第一次收盘价格有可能为空,就以今日开盘价格为收盘价格
+			buy=open;
+		}
 		return buy;
 	}
 	public void setBuy(BigDecimal buy) {
 		this.buy = buy;
 	}
 	public BigDecimal getSell() {
+		if (sell==null) {//第一次收盘价格有可能为空,就以今日开盘价格为收盘价格
+			sell=open;
+		}
 		return sell;
 	}
 	public void setSell(BigDecimal sell) {
@@ -130,14 +138,19 @@ public class Market {
 		this.moneypair = moneypair;
 	}
 	public BigDecimal getOpen() {
-		open=TaskUtil.todayOpen.get(platformid+"."+getMoneytype()+"_"+getBuymoneytype());
 		return open;
+	}
+	public void setOpen(BigDecimal open) {
+		this.open = open;
 	}
 	public BigDecimal getOpenrmb() {
 		openrmb=StringUtil.ToRmb(getOpen(), platformid, getBuymoneytype());
 		return openrmb;
 	}
 	public BigDecimal getClose() {
+		if (close==null) {//第一次收盘价格有可能为空,就以今日开盘价格为收盘价格
+			close=open;
+		}
 		return close;
 	}
 	public void setClose(BigDecimal close) {

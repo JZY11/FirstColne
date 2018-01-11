@@ -33,11 +33,10 @@ import com.btb.entity.Rate;
 import com.btb.entity.PlatformInfo;
 import com.btb.entity.PlatformSupportmoney;
 import com.btb.entity.TodayOpenMoney;
-import com.btb.tasks.BitbCountJob;
 import com.btb.tasks.BuyParmeterJob;
 import com.btb.tasks.CheckWebSocketStatusJob;
 import com.btb.tasks.InitBuyMonetyTypeRate;
-import com.btb.tasks.InitTodayOpenJob;
+import com.btb.tasks.InitTodayBaseInfoJob;
 import com.btb.tasks.MarketHistoryKlineJob;
 import com.btb.tasks.RateJob;
 import com.btb.tasks.service.JobManager;
@@ -55,15 +54,9 @@ public class TaskUtil {
 	public static Map<String,List<PlatformSupportmoney>> moneyPairs=new HashMap<>();
 	//每个平台的websocketClient链接
 	public static Map<String, WebSocketClient> webSocketClientMap = new HashMap<>();
-	//每个交易对,今日开盘价格Map<平台id.交易对,最新价格>
-	public static Map<String, BigDecimal> todayOpen = new HashMap<>();
 	//获取每个平台的btc,eth实时价格,用于转换成人民币
 	//Map<交易平台id.btc/eth/等等>
 	public static Map<String, BigDecimal> buyMonetyTypeRate=new HashMap<>();
-	//买卖盘Map<交易平台id.交易对,top10订单集合>
-	public static Map<String, MyList<MarketOrder>> orders = new HashMap<>();
-	//比特币当前数量:用于计算流通市值bitbCountMap
-	public static Map<String, BigDecimal> bitbCountMap = new HashMap<>();
 	//手动填写,所有平台的id集合
 	public static Set<String> platformids=new HashSet<>();
 	public static String platformidsStr="";
@@ -95,11 +88,7 @@ public class TaskUtil {
 		System.out.println("从数据库抓取btc和ehc的最新价格");
 		TaskUtil.initBuyMonetyTypeRate();
 		//获取每个平台,每个交易对的 今日开盘价格, 从k线图里面获取,每1.5分钟跑一次
-		System.out.println("正在加载今日每种交易对的开盘价格,也就是0晨的收盘价格");
-		TaskUtil.initTodayOpen();
-		
-		System.out.println("每一小时获取一次流通量");
-		TaskUtil.getBitbCount();
+		TaskUtil.InitTodayBaseInfoMarket();
 	}
 	
 	public static void taskList() {
@@ -112,13 +101,9 @@ public class TaskUtil {
 		System.out.println("启动所有平台的websoket");
 		enableWebSocket();
 		
-		//每隔1小时获取一次,比特币的数量
-		System.out.println("每隔1小时获取一次,比特币的数量");
-		JobManager.addJob(new BitbCountJob());
-		
 		//获取每个平台,每个交易对的 今日开盘价格, 从k线图里面获取,每1.5分钟跑一次
 		System.out.println("获取每个平台,每个交易对的 今日开盘价格, 从k线图里面获取,每1.5分钟跑一次");
-		JobManager.addJob(new InitTodayOpenJob());
+		JobManager.addJob(new InitTodayBaseInfoJob());
 		
 		//启动加载每个平台的btc,eth价格, 每1.5分钟执行一次
 		System.out.println("启动加载每个平台的btc,eth价格也就是buymonetyType, 每1.5分钟执行一次");
@@ -140,15 +125,13 @@ public class TaskUtil {
 		
 	}
 	
-	//每隔1小时获取一次,比特币的数量
-	public static void getBitbCount() {
-		//比特币流通量
-		List<Bitbinfo> selectAll2 = BaseDaoSql.findAll(Bitbinfo.class);
-		for (Bitbinfo bitbInfo : selectAll2) {
-			//放到集合里面
-			if (bitbInfo.getCurrentcount() != null) {
-				TaskUtil.bitbCountMap.put(bitbInfo.getBitbcode().toLowerCase(), bitbInfo.getCurrentcount());
-			}
+	//行情id,platformid,moneypair,moneytype,buymoneytype,open:今日开盘,
+	//今日最低low,今日最高high,今日成交额vol,今日成交量amount
+	//每1.5分钟刷新一次
+	public static void InitTodayBaseInfoMarket() {
+		List<Market> list = BaseDaoSql.selectList("todayBaseInfoMarket", platformidsStr);
+		for (Market market : list) {
+			MarketUtil.changeMarket(market);
 		}
 	}
 	
@@ -259,7 +242,7 @@ public class TaskUtil {
 	}
 	
 	//采集订单的时候调用这个
-	public static void putOrders(String platformId,String moneytype,String buymoneytype,MarketOrder marketOrder) {
+/*	public static void putOrders(String platformId,String moneytype,String buymoneytype,MarketOrder marketOrder) {
 		String _id = platformId+"."+moneytype+"_"+buymoneytype;
 		marketOrder.setPrice(StringUtil.ToRmb(marketOrder.getPrice(), platformId, buymoneytype));
 		MyList<MarketOrder> myList = orders.get(_id);
@@ -273,27 +256,8 @@ public class TaskUtil {
 		if (myList.size()>=10) {//够10个存储到mongodb
 			MongoDbUtil.insertOrUpdateOrderTab(_id, JSON.toJSONString(myList));
 		}
-	}
+	}*/
 	
-	public static void initTodayOpen() {
-		List<Markethistory> markethistories = BaseDaoSql.selectList("findTodayOpenMoney",platformidsStr);
-		for (Markethistory markethistory : markethistories) {
-			TodayOpenMoney todayOpenMoney = new TodayOpenMoney();
-			String id=markethistory.getPlatformid()+"."+markethistory.getMoneytype()+"_"+markethistory.getBuymoneytype();
-			todayOpenMoney.setId(id);
-			todayOpenMoney.setOpen(markethistory.getOpen());
-			todayOpenMoney.setToday(markethistory.getToday());
-			todayOpenMoney.setBuymoneytype(markethistory.getBuymoneytype());
-			todayOpenMoney.setMoneypair(markethistory.getMoneypair());
-			todayOpenMoney.setMoneytype(markethistory.getMoneytype());
-			todayOpenMoney.setPlatformid(markethistory.getPlatformid());
-			todayOpen.put(todayOpenMoney.getId(), todayOpenMoney.getOpen());
-			int updateCount = BaseDaoSql.update(todayOpenMoney);
-			if (updateCount==0) {
-				BaseDaoSql.save(todayOpenMoney);
-			}
-		}
-	}
 	
 	//采集订单的时候调用这个
 	public static void putBuySellDisk(String platformId,String moneytype,String buymoneytype,MarketDepth marketDepth) {
