@@ -78,7 +78,8 @@ public class HttpUtil extends BaseHttp {
 					if (!data.isEmpty()) {
 						data.remove(0);
 					}
-					
+
+
 					for (MarketHistoryVo2 marketHistoryVo2:data) {
 						if (marketHistoryVo2.getId()<=dbCurrentTime) {
 							continue;//如果小于数据库最大时间,说明数据库已经存在,不需要再添加
